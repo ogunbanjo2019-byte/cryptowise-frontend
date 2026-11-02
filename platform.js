@@ -1,20 +1,57 @@
-'use strict';
+"use strict";
 
 const assets = [
-  { symbol: 'BTC', name: 'Bitcoin', icon: '₿', color: 'coin-btc', price: 67432.21, qty: .1842, change: '+2.34%' },
-  { symbol: 'ETH', name: 'Ethereum', icon: '◆', color: 'coin-eth', price: 3245.67, qty: 2.84, change: '+1.18%' },
-  { symbol: 'USDT', name: 'Tether', icon: '₮', color: 'coin-usdt', price: 1, qty: 5120, change: '+0.01%' },
-  { symbol: 'BNB', name: 'BNB', icon: '◆', color: 'coin-bnb', price: 580.12, qty: 6.4, change: '+1.76%' }
+  {
+    symbol: "BTC",
+    name: "Bitcoin",
+    icon: "₿",
+    color: "coin-btc",
+    price: 67432.21,
+    qty: 0.1842,
+    change: "+2.34%",
+  },
+  {
+    symbol: "ETH",
+    name: "Ethereum",
+    icon: "◆",
+    color: "coin-eth",
+    price: 3245.67,
+    qty: 2.84,
+    change: "+1.18%",
+  },
+  {
+    symbol: "USDT",
+    name: "Tether",
+    icon: "₮",
+    color: "coin-usdt",
+    price: 1,
+    qty: 5120,
+    change: "+0.01%",
+  },
+  {
+    symbol: "BNB",
+    name: "BNB",
+    icon: "◆",
+    color: "coin-bnb",
+    price: 580.12,
+    qty: 6.4,
+    change: "+1.76%",
+  },
 ];
 
-const money = n => '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const money = (n) =>
+  "$" +
+  n.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
 const transactions = [
-  ['Deposit', '100 USDT', 'USDT', 'Completed', 'Oct 30, 2026'],
-  ['Buy ETH', '0.42 ETH', 'ETH', 'Completed', 'Oct 29, 2026'],
-  ['Sell BTC', '0.006 BTC', 'BTC', 'Completed', 'Oct 28, 2026'],
-  ['Deposit', '250 USDT', 'USDT', 'Pending', 'Oct 27, 2026'],
-  ['Buy BTC', '0.01 BTC', 'BTC', 'Completed', 'Oct 25, 2026']
+  ["Deposit", "100 USDT", "USDT", "Completed", "Oct 30, 2026"],
+  ["Buy ETH", "0.42 ETH", "ETH", "Completed", "Oct 29, 2026"],
+  ["Sell BTC", "0.006 BTC", "BTC", "Completed", "Oct 28, 2026"],
+  ["Deposit", "250 USDT", "USDT", "Pending", "Oct 27, 2026"],
+  ["Buy BTC", "0.01 BTC", "BTC", "Completed", "Oct 25, 2026"],
 ];
 
 const el = (tag, cls, text) => {
@@ -24,24 +61,34 @@ const el = (tag, cls, text) => {
   return e;
 };
 
-const rows = (data, keys) => data.map(row => `<tr>${row.map((cell, i) => `<td>${keys?.[i] === 'status' ? `<span class="status ${cell.toLowerCase()}">${cell}</span>` : cell}</td>`).join('')}</tr>`).join('');
+const rows = (data, keys) =>
+  data
+    .map(
+      (row) =>
+        `<tr>${row.map((cell, i) => `<td>${keys?.[i] === "status" ? `<span class="status ${cell.toLowerCase()}">${cell}</span>` : cell}</td>`).join("")}</tr>`,
+    )
+    .join("");
 
-function heading(title, sub, actions = '') {
+function heading(title, sub, actions = "") {
   return `<div class="page-heading"><div><h1>${title}</h1><p>${sub}</p></div><div class="heading-actions">${actions}</div></div>`;
 }
 
-function metric(label, value, foot, icon = '◫') {
+function metric(label, value, foot, icon = "◫") {
   return `<article class="metric-card"><div class="metric-label">${label}<span class="metric-icon">${icon}</span></div><div class="metric-value">${value}</div><div class="metric-foot">${foot}</div></article>`;
 }
 
 function assetList() {
-  return `<div class="asset-list">${assets.map(a => `<div class="asset-line"><i class="coin ${a.color}">${a.icon}</i><div class="asset-name"><b>${a.name}</b><small>${a.symbol}</small></div><div class="asset-holding"><b>${money(a.qty * a.price)}</b><small>${a.qty} ${a.symbol}</small></div><span class="asset-change">${a.change}</span></div>`).join('')}</div>`;
+  return `<div class="asset-list">${assets.map((a) => `<div class="asset-line"><i class="coin ${a.color}">${a.icon}</i><div class="asset-name"><b>${a.name}</b><small>${a.symbol}</small></div><div class="asset-holding"><b>${money(a.qty * a.price)}</b><small>${a.qty} ${a.symbol}</small></div><span class="asset-change">${a.change}</span></div>`).join("")}</div>`;
 }
 
 function activityRows(data = transactions) {
-  return data.map(row => `<tr><td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td><span class="status ${row[3].toLowerCase()}">${row[3]}</span></td><td>${row[4]}</td></tr>`).join('');
+  return data
+    .map(
+      (row) =>
+        `<tr><td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td><span class="status ${row[3].toLowerCase()}">${row[3]}</span></td><td>${row[4]}</td></tr>`,
+    )
+    .join("");
 }
-
 
 // ==========================================
 // 2. CHART RENDERING
@@ -49,237 +96,292 @@ function activityRows(data = transactions) {
 
 function renderChart(canvas) {
   if (!canvas) return;
-  const w = canvas.clientWidth, h = canvas.clientHeight, dpr = window.devicePixelRatio || 1;
+
+  const w = canvas.clientWidth;
+  const h = canvas.clientHeight;
+  const dpr = window.devicePixelRatio || 1;
+
   if (!w || !h) return;
+
   canvas.width = w * dpr;
   canvas.height = h * dpr;
-  const c = canvas.getContext('2d');
+
+  const c = canvas.getContext("2d");
   c.scale(dpr, dpr);
-  
+
   for (let i = 0; i < 4; i++) {
     c.beginPath();
-    c.moveTo(0, i * h / 3);
-    c.lineTo(w, i * h / 3);
-    c.strokeStyle = 'rgba(210,239,228,.07)';
+    c.moveTo(0, (i * h) / 3);
+    c.lineTo(w, (i * h) / 3);
+    c.strokeStyle = "rgba(210,239,228,.07)";
     c.stroke();
   }
-  
-  const vals = [27, 35, 32, 43, 38, 48, 41, 56, 50, 61, 57, 71, 63, 73, 68, 82, 78, 74, 89, 81, 94, 87, 102, 97, 109, 101, 119, 111, 127, 118, 137];
-  const lo = 20, hi = 145;
-  
+
+  const vals = [
+    27, 35, 32, 43, 38, 48, 41, 56, 50, 61, 57, 71, 63, 73, 68, 82, 78, 74, 89,
+    81, 94, 87, 102, 97, 109, 101, 119, 111, 127, 118, 137,
+  ];
+  const lo = 20;
+  const hi = 145;
+
   c.beginPath();
   vals.forEach((v, i) => {
-    const x = i / (vals.length - 1) * w, y = h - 8 - (v - lo) / (hi - lo) * (h - 18);
+    const x = (i / (vals.length - 1)) * w;
+    const y = h - 8 - ((v - lo) / (hi - lo)) * (h - 18);
     i ? c.lineTo(x, y) : c.moveTo(x, y);
   });
+
   c.lineTo(w, h);
   c.lineTo(0, h);
   c.closePath();
-  
+
   const g = c.createLinearGradient(0, 0, 0, h);
-  g.addColorStop(0, 'rgba(23,204,149,.27)');
-  g.addColorStop(1, 'rgba(23,204,149,0)');
+  g.addColorStop(0, "rgba(23,204,149,.27)");
+  g.addColorStop(1, "rgba(23,204,149,0)");
   c.fillStyle = g;
   c.fill();
-  
+
   c.beginPath();
   vals.forEach((v, i) => {
-    const x = i / (vals.length - 1) * w, y = h - 8 - (v - lo) / (hi - lo) * (h - 18);
+    const x = (i / (vals.length - 1)) * w;
+    const y = h - 8 - ((v - lo) / (hi - lo)) * (h - 18);
     i ? c.lineTo(x, y) : c.moveTo(x, y);
   });
-  c.strokeStyle = '#24d09b';
+
+  c.strokeStyle = "#24d09b";
   c.lineWidth = 2;
   c.stroke();
 }
-
 
 // ==========================================
 // 3. PAGE TEMPLATES & VIEWS
 // ==========================================
 
 function dashboard() {
-  return `${heading('Good morning, Jordan', 'Here’s what’s happening with your portfolio today.', `<button class="btn btn-secondary" data-action="download">↓ &nbsp; Export</button><button class="btn btn-primary" data-page-link="wallet">＋ &nbsp; Add funds</button>`)}<div class="metric-grid">${metric('TOTAL BALANCE', '$24,680.50', '<em>↗ 8.24%</em> this month', '◉')}${metric('TODAY’S CHANGE', '+$384.21', '<em>↗ 1.58%</em> today', '↗')}${metric('ASSETS HELD', '4', 'Across 3 asset types', '▣')}</div><div class="overview-grid"><section class="panel chart-panel"><div class="panel-title"><div><h2>Portfolio performance</h2><div class="chart-legend"><span></span> Total value</div></div><div class="period-select"><button>1D</button><button>1W</button><button class="chosen">1M</button><button>1Y</button><button>ALL</button></div></div><canvas class="large-chart" id="portfolioChart" aria-label="Portfolio performance chart"></canvas></section><section class="panel"><div class="panel-title"><h2>Your assets</h2><button data-page-link="wallet">View wallet ↗</button></div>${assetList()}</section></div><div class="dashboard-lower"><section class="panel"><div class="panel-title"><h2>Recent activity</h2><button data-page-link="history">View history ↗</button></div><div class="table-wrap"><table class="activity-table"><thead><tr><th>ACTIVITY</th><th>AMOUNT</th><th>ASSET</th><th>STATUS</th><th>DATE</th></tr></thead><tbody>${activityRows(transactions.slice(0, 4))}</tbody></table></div></section><section class="panel"><div class="panel-title"><h2>Market snapshot</h2><button data-page-link="markets">All markets ↗</button></div>${marketRows(assets.slice(0, 3))}</section></div><div class="deposit-callout"><div><h3>Your first deposit comes with a bonus</h3><p>Eligible deposits may qualify for our welcome promotion. Terms apply.</p></div><button class="btn btn-primary" data-page-link="promotions">Explore bonus ↗</button></div>`;
+  return `${heading("Welcome to CryptoWise", "Here’s what’s happening with your portfolio today.", `<button class="btn btn-secondary" data-action="download">↓ &nbsp; Export</button><button class="btn btn-primary" data-page-link="wallet">＋ &nbsp; Add funds</button>`)}<div class="metric-grid">${metric("TOTAL BALANCE", "$24,680.50", "<em>↗ 8.24%</em> this month", "◉")}${metric("TODAY’S CHANGE", "+$384.21", "<em>↗ 1.58%</em> today", "↗")}${metric("ASSETS HELD", "4", "Across 3 asset types", "▣")}</div><div class="overview-grid"><section class="panel chart-panel"><div class="panel-title"><div><h2>Portfolio performance</h2><div class="chart-legend"><span></span> Total value</div></div><div class="period-select"><button>1D</button><button>1W</button><button class="chosen">1M</button><button>1Y</button><button>ALL</button></div></div><canvas class="large-chart" id="portfolioChart" aria-label="Portfolio performance chart"></canvas></section><section class="panel"><div class="panel-title"><h2>Your assets</h2><button data-page-link="wallet">View wallet ↗</button></div>${assetList()}</section></div><div class="dashboard-lower"><section class="panel"><div class="panel-title"><h2>Recent activity</h2><button data-page-link="history">View history ↗</button></div><div class="table-wrap"><table class="activity-table"><thead><tr><th>ACTIVITY</th><th>AMOUNT</th><th>ASSET</th><th>STATUS</th><th>DATE</th></tr></thead><tbody>${activityRows(transactions.slice(0, 4))}</tbody></table></div></section><section class="panel"><div class="panel-title"><h2>Market snapshot</h2><button data-page-link="markets">All markets ↗</button></div>${marketRows(assets.slice(0, 3))}</section></div><div class="deposit-callout"><div><h3>Your first deposit comes with a bonus</h3><p>Eligible deposits may qualify for our welcome promotion. Terms apply.</p></div><button class="btn btn-primary" data-page-link="promotions">Explore bonus ↗</button></div>`;
 }
 
 function marketRows(list = assets) {
-  return `<div class="asset-list">${list.map(a => `<div class="asset-line"><i class="coin ${a.color}">${a.icon}</i><div class="asset-name"><b>${a.name}</b><small>${a.symbol}/USD</small></div><div class="asset-holding"><b>${money(a.price)}</b><small>24h price</small></div><span class="asset-change">${a.change}</span></div>`).join('')}</div>`;
+  return `<div class="asset-list">${list.map((a) => `<div class="asset-line"><i class="coin ${a.color}">${a.icon}</i><div class="asset-name"><b>${a.name}</b><small>${a.symbol}/USD</small></div><div class="asset-holding"><b>${money(a.price)}</b><small>24h price</small></div><span class="asset-change">${a.change}</span></div>`).join("")}</div>`;
 }
 
 function marketsPage() {
-  return `${heading('Markets', 'Explore crypto assets and illustrative prices.', `<button class="btn btn-secondary" data-action="download">↓ &nbsp; Export market</button>`)}<div class="metric-grid">${metric('ASSETS LISTED', '120+', 'Illustrative catalog', '◈')}${metric('MARKET SENTIMENT', 'Positive', 'Market snapshot · sample', '↗')}${metric('CURRENCY', 'USD', 'Display preference', '＄')}</div><section class="panel"><div class="panel-title"><h2>Popular assets</h2><span class="chart-legend"><span></span> Sample market data</span></div><div class="filter-row"><input class="table-search" placeholder="Search assets..."><select><option>All assets</option><option>Favorites</option><option>Stablecoins</option></select></div><div id="marketTable"></div></section>`;
+  return `${heading("Markets", "Explore crypto assets and illustrative prices.", `<button class="btn btn-secondary" data-action="download">↓ &nbsp; Export market</button>`)}<div class="metric-grid">${metric("ASSETS LISTED", "120+", "Illustrative catalog", "◈")}${metric("MARKET SENTIMENT", "Positive", "Market snapshot · sample", "↗")}${metric("CURRENCY", "USD", "Display preference", "＄")}</div><section class="panel"><div class="panel-title"><h2>Popular assets</h2><span class="chart-legend"><span></span> Sample market data</span></div><div class="filter-row"><input class="table-search" placeholder="Search assets..."><select><option>All assets</option><option>Favorites</option><option>Stablecoins</option></select></div><div id="marketTable"></div></section>`;
 }
 
 function tradePage() {
-  return `${heading('Trade', 'Preview an order ticket. Orders are not submitted.', `<button class="btn btn-secondary" data-action="notify">Order history</button>`)}<div class="preview-banner"><span>ⓘ</span><div><b>Trading is not connected</b><span>Connect a licensed exchange or broker API and execution backend before accepting orders.</span></div></div><div class="overview-grid trade-grid"><section class="panel chart-panel"><div class="panel-title"><h2>ETH / USDT</h2><div class="chart-legend"><span></span> $3,245.67 &nbsp; +1.18%</div></div><canvas class="large-chart" id="tradeChart" aria-label="Illustrative Ethereum price chart"></canvas><div class="period-select"><button>15m</button><button>1H</button><button class="chosen">4H</button><button>1D</button><button>1W</button></div></section><section class="panel"><div class="tabs"><button class="active" data-tab="buy">Buy</button><button data-tab="sell">Sell</button></div><div class="form-field"><label>Order type</label><select><option>Market order</option><option>Limit order (preview)</option></select></div><div class="form-field" style="margin-top:12px"><label>Pay with</label><select><option>USDT · Available 5,120.00</option><option>ETH · Available 2.84</option></select></div><div class="form-field" style="margin-top:12px"><label>Amount</label><input type="number" placeholder="0.00" min="0"></div><div class="notice-card">Estimated price <strong>$3,245.67 / ETH</strong><br>Estimated fee <strong>—</strong> · backend not connected</div><button class="btn btn-primary" style="width:100%" data-action="notify">Preview order</button><small class="metric-foot">No trade will be placed in preview mode.</small></section></div>`;
+  return `${heading("Trade", "Preview an order ticket. Orders are not submitted.", `<button class="btn btn-secondary" data-action="notify">Order history</button>`)}<div class="preview-banner"><span>ⓘ</span><div><b>Trading is not connected</b><span>Connect a licensed exchange or broker API and execution backend before accepting orders.</span></div></div><div class="overview-grid trade-grid"><section class="panel chart-panel"><div class="panel-title"><h2>ETH / USDT</h2><div class="chart-legend"><span></span> $3,245.67 &nbsp; +1.18%</div></div><canvas class="large-chart" id="tradeChart" aria-label="Illustrative Ethereum price chart"></canvas><div class="period-select"><button>15m</button><button>1H</button><button class="chosen">4H</button><button>1D</button><button>1W</button></div></section><section class="panel"><div class="tabs"><button class="active" data-tab="buy">Buy</button><button data-tab="sell">Sell</button></div><div class="form-field"><label>Order type</label><select><option>Market order</option><option>Limit order (preview)</option></select></div><div class="form-field" style="margin-top:12px"><label>Pay with</label><select><option>USDT · Available 5,120.00</option><option>ETH · Available 2.84</option></select></div><div class="form-field" style="margin-top:12px"><label>Amount</label><input type="number" placeholder="0.00" min="0"></div><div class="notice-card">Estimated price <strong>$3,245.67 / ETH</strong>  
+Estimated fee <strong>—</strong> · backend not connected</div><button class="btn btn-primary" style="width:100%" data-action="notify">Preview order</button><small class="metric-foot">No trade will be placed in preview mode.</small></section></div>`;
 }
 
 function walletPage() {
-  return `${heading('Wallet', 'View your crypto balances and deposit availability.', `<button class="btn btn-primary" data-page-link="deposit">＋ &nbsp; Deposit</button>`)}<div class="wallet-grid">${assets.filter(a => ['USDT', 'ETH'].includes(a.symbol)).map(a => `<section class="panel"><div class="wallet-asset"><i class="coin ${a.color}">${a.icon}</i><div><b>${a.name}</b><small>${a.symbol} · Ethereum network</small></div></div><div class="wallet-balance">${a.qty.toLocaleString()} ${a.symbol}</div><div class="wallet-equivalent">≈ ${money(a.qty * a.price)} USD</div><div class="wallet-actions"><button class="btn btn-primary" data-page-link="deposit">Deposit status</button><button class="btn btn-secondary" data-action="notify">Withdraw</button><button class="btn btn-secondary" data-action="notify">Transfer</button></div></section>`).join('')}</div><section class="panel" style="margin-top:14px"><div class="panel-title"><h2>Deposit availability</h2></div><div class="notice-card"><strong>ETH and USDT on Ethereum are not currently accepting deposits.</strong><br>Do not send funds to the address shown in an exchange app or any address not displayed as an active CryptoWise instruction. Chain verification, confirmations, reorg recovery, and reconciliation must be operational before deposits open.</div><div class="panel-title" style="margin-top:19px"><h2>Recent wallet activity</h2><button data-page-link="history">Full history ↗</button></div><div class="table-wrap"><table class="activity-table"><thead><tr><th>ACTIVITY</th><th>AMOUNT</th><th>ASSET</th><th>STATUS</th><th>DATE</th></tr></thead><tbody>${activityRows(transactions.slice(0, 3))}</tbody></table></div></section>`;
+  return `${heading("Wallet", "View your crypto balances and deposit availability.", `<button class="btn btn-primary" data-page-link="deposit">＋ &nbsp; Deposit</button>`)}<div class="wallet-grid">${assets
+    .filter((a) => ["USDT", "ETH"].includes(a.symbol))
+    .map(
+      (a) =>
+        `<section class="panel"><div class="wallet-asset"><i class="coin ${a.color}">${a.icon}</i><div><b>${a.name}</b><small>${a.symbol} · Ethereum network</small></div></div><div class="wallet-balance">${a.qty.toLocaleString()} ${a.symbol}</div><div class="wallet-equivalent">≈ ${money(a.qty * a.price)} USD</div><div class="wallet-actions"><button class="btn btn-primary" data-page-link="deposit">Deposit status</button><button class="btn btn-secondary" data-action="notify">Withdraw</button><button class="btn btn-secondary" data-action="notify">Transfer</button></div></section>`,
+    )
+    .join(
+      "",
+    )}</div><section class="panel" style="margin-top:14px"><div class="panel-title"><h2>Deposit availability</h2></div><div class="notice-card"><strong>ETH and USDT on Ethereum are not currently accepting deposits.</strong>  
+Do not send funds to the address shown in an exchange app or any address not displayed as an active CryptoWise instruction. Chain verification, confirmations, reorg recovery, and reconciliation must be operational before deposits open.</div><div class="panel-title" style="margin-top:19px"><h2>Recent wallet activity</h2><button data-page-link="history">Full history ↗</button></div><div class="table-wrap"><table class="activity-table"><thead><tr><th>ACTIVITY</th><th>AMOUNT</th><th>ASSET</th><th>STATUS</th><th>DATE</th></tr></thead><tbody>${activityRows(transactions.slice(0, 3))}</tbody></table></div></section>`;
 }
 
 function depositPage() {
-  return `${heading('Crypto deposits', 'View receiving instructions and track deposit requests. Do not send funds while this page says deposits are paused.')}<section class="panel"><div class="panel-title"><h2>Ethereum deposits · ETH and USDT</h2><span class="status pending" id="depositAvailability">Checking status</span></div><div class="notice-card" id="depositNetworkNote">Loading backend deposit status…</div><div class="form-field" style="margin-top:12px"><label for="depositAsset">Asset</label><select id="depositAsset"><option value="ETH">ETH · native Ethereum</option><option value="USDT">USDT · Ethereum ERC-20</option></select></div><div class="notice-card"><strong>Receiving address</strong><br><code id="depositAddress">No active receiving address</code><button type="button" class="btn btn-secondary" id="copyDepositAddress" style="margin-left:10px" hidden>Copy</button></div><div class="notice-card" id="depositAssetDetails">No verified deposit instructions are active. Never send assets to the address shown in another app unless CryptoWise presents it here as active.</div><form id="depositRequestForm" hidden><div class="form-field"><label for="depositTxHash">Transaction hash</label><input id="depositTxHash" name="txHash" type="text" inputmode="text" autocomplete="off" placeholder="0x…" pattern="0x[a-fA-F0-9]{64}" required></div><button class="btn btn-primary" type="submit" style="margin-top:10px">Submit deposit for tracking</button><p class="metric-foot">Submitting a hash is not proof of payment and does not itself credit a balance.</p></form></section><section class="panel" style="margin-top:14px"><div class="panel-title"><h2>Your deposit requests</h2></div><div id="depositRequestsList" class="notice-card">Sign in to load your deposit requests.</div></section>`;
+  return `${heading("Crypto deposits", "View receiving instructions and track deposit requests. Do not send funds while this page says deposits are paused.")}<section class="panel"><div class="panel-title"><h2>Ethereum deposits · ETH and USDT</h2><span class="status pending" id="depositAvailability">Checking status</span></div><div class="notice-card" id="depositNetworkNote">Loading backend deposit status…</div><div class="form-field" style="margin-top:12px"><label for="depositAsset">Asset</label><select id="depositAsset"><option value="ETH">ETH · native Ethereum</option><option value="USDT">USDT · Ethereum ERC-20</option></select></div><div class="notice-card"><strong>Receiving address</strong>  
+<code id="depositAddress">No active receiving address</code><button type="button" class="btn btn-secondary" id="copyDepositAddress" style="margin-left:10px" hidden>Copy</button></div><div class="notice-card" id="depositAssetDetails">No verified deposit instructions are active. Never send assets to the address shown in another app unless CryptoWise presents it here as active.</div><form id="depositRequestForm" hidden><div class="form-field"><label for="depositTxHash">Transaction hash</label><input id="depositTxHash" name="txHash" type="text" inputmode="text" autocomplete="off" placeholder="0x…" pattern="0x[a-fA-F0-9]{64}" required></div><button class="btn btn-primary" type="submit" style="margin-top:10px">Submit deposit for tracking</button><p class="metric-foot">Submitting a hash is not proof of payment and does not itself credit a balance.</p></form></section><section class="panel" style="margin-top:14px"><div class="panel-title"><h2>Your deposit requests</h2></div><div id="depositRequestsList" class="notice-card">Sign in to load your deposit requests.</div></section>`;
 }
 
 function historyPage() {
   const hist = [...transactions, ...transactions.slice(1, 4)];
-  return `${heading('Transaction history', 'Review deposits, withdrawals, and trades.', `<button class="btn btn-secondary" data-action="download">↓ &nbsp; Download CSV</button>`)}<section class="panel"><div class="filter-row"><input class="table-search" placeholder="Search transactions..."><select><option>All activity</option><option>Deposits</option><option>Withdrawals</option><option>Trades</option></select><select><option>All statuses</option><option>Completed</option><option>Pending</option></select></div><div class="table-wrap"><table class="admin-table"><thead><tr><th>ACTIVITY</th><th>AMOUNT</th><th>ASSET</th><th>STATUS</th><th>DATE</th></tr></thead><tbody>${activityRows(hist)}</tbody></table></div></section>`;
+  return `${heading("Transaction history", "Review deposits, withdrawals, and trades.", `<button class="btn btn-secondary" data-action="download">↓ &nbsp; Download CSV</button>`)}<section class="panel"><div class="filter-row"><input class="table-search" placeholder="Search transactions..."><select><option>All activity</option><option>Deposits</option><option>Withdrawals</option><option>Trades</option></select><select><option>All statuses</option><option>Completed</option><option>Pending</option></select></div><div class="table-wrap"><table class="admin-table"><thead><tr><th>ACTIVITY</th><th>AMOUNT</th><th>ASSET</th><th>STATUS</th><th>DATE</th></tr></thead><tbody>${activityRows(hist)}</tbody></table></div></section>`;
 }
 
 function promotionsPage(admin = false) {
-  return `${heading(admin ? 'Promotion settings' : 'Promotions', admin ? 'Configure offer display and terms (preview only).' : 'Offers and eligibility information.', admin ? '<button class="btn btn-primary" data-action="notify">＋ &nbsp; New promotion</button>' : '')}<section class="promo-card"><div><div class="eyebrow">WELCOME OFFER · TERMS APPLY</div><h2>Give your first deposit a brighter beginning.</h2><p>Eligible first deposits may qualify for up to a 3× promotional bonus. Offer eligibility, caps, holding periods, and withdrawal terms must be configured and legally reviewed before launch.</p><button class="btn btn-primary" data-action="notify">View offer details ↗</button></div><div class="promo-value">3×</div></section><div class="dashboard-lower"><section class="panel"><div class="panel-title"><h2>How it works</h2></div><div class="notice-card"><strong>1. Check eligibility</strong><br>Confirm the user qualifies based on published terms.</div><div class="notice-card"><strong>2. Make a qualifying deposit</strong><br>Deposit requirements must be verified by the connected backend.</div><div class="notice-card"><strong>3. Bonus is credited</strong><br>Credit only after policy and compliance requirements are met.</div></section><section class="panel"><div class="panel-title"><h2>Offer terms</h2></div><p class="metric-foot" style="font-size:9px;line-height:1.8">This interface uses a placeholder promotion. Define exact eligibility, bonus cap, geographic restrictions, expiry, custody, withdrawal lock-up, consumer disclosures, and applicable legal approvals before publishing an offer.</p></section></div>`;
+  return `${heading(admin ? "Promotion settings" : "Promotions", admin ? "Configure offer display and terms (preview only)." : "Offers and eligibility information.", admin ? '<button class="btn btn-primary" data-action="notify">＋ &nbsp; New promotion</button>' : "")}<section class="promo-card"><div><div class="eyebrow">WELCOME OFFER · TERMS APPLY</div><h2>Give your first deposit a brighter beginning.</h2><p>Eligible first deposits may qualify for up to a 3× promotional bonus. Offer eligibility, caps, holding periods, and withdrawal terms must be configured and legally reviewed before launch.</p><button class="btn btn-primary" data-action="notify">View offer details ↗</button></div><div class="promo-value">3×</div></section><div class="dashboard-lower"><section class="panel"><div class="panel-title"><h2>How it works</h2></div><div class="notice-card"><strong>1. Check eligibility</strong>  
+Confirm the user qualifies based on published terms.</div><div class="notice-card"><strong>2. Make a qualifying deposit</strong>  
+Deposit requirements must be verified by the connected backend.</div><div class="notice-card"><strong>3. Bonus is credited</strong>  
+Credit only after policy and compliance requirements are met.</div></section><section class="panel"><div class="panel-title"><h2>Offer terms</h2></div><p class="metric-foot" style="font-size:9px;line-height:1.8">This interface uses a placeholder promotion. Define exact eligibility, bonus cap, geographic restrictions, expiry, custody, withdrawal lock-up, consumer disclosures, and applicable legal approvals before publishing an offer.</p></section></div>`;
 }
 
 function settingsPage() {
-  return `${heading('Settings', 'Manage your profile and interface preferences.')}<div class="settings-layout"><nav class="settings-nav"><button class="active">Profile</button><button>Security</button><button>Notifications</button><button>Preferences</button></nav><section class="panel"><div class="panel-title"><h2>Personal information</h2><span class="status">Preview</span></div><div class="form-grid"><div class="form-field"><label>First name</label><input data-profile-first value="">/div><div class="form-field"><label>Last name</label><input data-profile-last value="">/div><div class="form-field"><label>Email address</label><input data-profile-email type="email" value=""></div><div class="form-field"><label>Display currency</label><select><option>USD — US Dollar</option></select></div></div><div class="notice-card" style="margin-top:15px">Profile edits are not saved in preview mode. Authentication, password updates, multi-factor authentication, and account recovery require a secure identity backend.</div><button class="btn btn-primary" style="margin-top:10px" data-action="notify">Save changes</button></section></div>`;
+  return `${heading("Settings", "Manage your profile and interface preferences.")}<div class="settings-layout"><nav class="settings-nav"><button class="active">Profile</button><button>Security</button><button>Notifications</button><button>Preferences</button></nav><section class="panel"><div class="panel-title"><h2>Personal information</h2><span class="status">Preview</span></div><div class="form-grid"><div class="form-field"><label>First name</label><input data-profile-first value=""></div><div class="form-field"><label>Last name</label><input data-profile-last value=""></div><div class="form-field"><label>Email address</label><input data-profile-email type="email" value=""></div><div class="form-field"><label>Display currency</label><select><option>USD — US Dollar</option></select></div></div><div class="notice-card" style="margin-top:15px">Profile edits are not saved in preview mode. Authentication, password updates, multi-factor authentication, and account recovery require a secure identity backend.</div><button class="btn btn-primary" style="margin-top:10px" data-action="notify">Save changes</button></section></div>`;
 }
 
 const views = {
-  'overview': dashboard,
-  'markets': marketsPage,
-  'trade': tradePage,
-  'wallet': walletPage,
-  'deposit': depositPage,
-  'history': historyPage,
-  'promotions': promotionsPage,
-  'settings': settingsPage
+  overview: dashboard,
+  markets: marketsPage,
+  trade: tradePage,
+  wallet: walletPage,
+  deposit: depositPage,
+  history: historyPage,
+  promotions: promotionsPage,
+  settings: settingsPage,
 };
 
-let currentPage = 'overview';
+let currentPage = "overview";
 let liveWallet = null;
 let liveProfile = null;
 let liveDepositInstructions = null;
 
 function buildMarketTable() {
-  const host = document.getElementById('marketTable');
+  const host = document.getElementById("marketTable");
   if (!host) return;
   // Note: ensure table helper is defined if used, or use row strings directly
 }
 
 function navigate(page) {
   if (!views[page]) return;
-  currentPage = page;
-  document.querySelectorAll('.side-link').forEach(b => b.classList.toggle('active', b.dataset.page === page));
-  const content = document.getElementById('pageContent');
-  content.innerHTML = views[page]();
-  buildMarketTable();
-  renderChart(document.getElementById('portfolioChart'));
-  renderChart(document.getElementById('tradeChart'));
-  document.querySelector('.platform-sidebar').classList.remove('open');
-  document.querySelector('.mobile-shade').classList.remove('visible');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  if (liveWallet) renderConnectedAccount();
-  if (currentPage === 'deposit') loadDepositPage();
-}
 
+  currentPage = page;
+
+  document
+    .querySelectorAll(".side-link")
+    .forEach((b) => b.classList.toggle("active", b.dataset.page === page));
+
+  const content = document.getElementById("pageContent");
+  content.innerHTML = views[page]();
+
+  buildMarketTable();
+  renderChart(document.getElementById("portfolioChart"));
+  renderChart(document.getElementById("tradeChart"));
+
+  document.querySelector(".platform-sidebar").classList.remove("open");
+  document.querySelector(".mobile-shade").classList.remove("visible");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+
+  if (liveProfile) renderConnectedAccount();
+  if (currentPage === "deposit") loadDepositPage();
+}
 
 // ==========================================
 // 4. UI TOASTS & EVENT LISTENERS
 // ==========================================
 
 let toastTimer;
+
 function toast(message) {
-  const box = document.querySelector('.toast');
+  const box = document.querySelector(".toast");
   if (!box) return;
+
   box.textContent = message;
-  box.classList.add('visible');
+  box.classList.add("visible");
+
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => box.classList.remove('visible'), 3200);
+  toastTimer = setTimeout(() => box.classList.remove("visible"), 3200);
 }
 
-document.addEventListener('click', e => {
-  const nav = e.target.closest('[data-page], [data-page-link]');
+document.addEventListener("click", (e) => {
+  const nav = e.target.closest("[data-page], [data-page-link]");
+
   if (nav) {
     e.preventDefault();
     navigate(nav.dataset.page || nav.dataset.pageLink);
     return;
   }
-  const action = e.target.closest('[data-action]');
+
+  const action = e.target.closest("[data-action]");
+
   if (action) {
-    if (action.dataset.action === 'download') {
-      // Live backend export integration
+    if (action.dataset.action === "download") {
+      // Download the authenticated account export generated by the backend.
       (async () => {
         try {
-          const token = window.CryptoWiseAuth?.isSignedIn?.() ? await window.CryptoWiseAuth.getIdToken() : null;
-          const response = await fetch('https://cryptowise-backend.onrender.com/api/export', {
-            method: 'GET',
-            headers: {
-              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
-            }
-          });
-          if (!response.ok) throw new Error('Failed to download report from backend');
-          const blob = await response.blob();
-          const url = window.URL.createObjectURL(blob);
-          const a = document.createElement('a');
-          a.href = url;
-          a.download = 'cryptowise-report.csv';
-          document.body.appendChild(a);
-          a.click();
-          a.remove();
-          toast('Report downloaded successfully!');
+          if (!window.CryptoWiseAPI?.exportAccount) {
+            throw new Error(
+              "Account export is unavailable. Update the API client first.",
+            );
+          }
+
+          const blob = await window.CryptoWiseAPI.exportAccount();
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+
+          link.href = url;
+          link.download = "cryptowise-account-export.csv";
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          toast("Your account export was downloaded.");
         } catch (error) {
-          console.error(error);
-          toast('Could not download live report from backend.');
+          toast(error.message || "Could not export account data.");
         }
       })();
     } else {
-      toast('Preview only — connect your backend to enable this action.');
+      toast("Preview only — connect your backend to enable this action.");
     }
+
     return;
   }
-  const tab = e.target.closest('[data-tab]');
+
+  const tab = e.target.closest("[data-tab]");
+
   if (tab) {
-    tab.parentElement.querySelectorAll('button').forEach(b => b.classList.toggle('active', b === tab));
+    tab.parentElement
+      .querySelectorAll("button")
+      .forEach((b) => b.classList.toggle("active", b === tab));
     return;
   }
-  const filter = e.target.closest('[data-filter]');
+
+  const filter = e.target.closest("[data-filter]");
+
   if (filter) {
-    filter.parentElement.querySelectorAll('button').forEach(b => b.classList.toggle('active', b === filter));
+    filter.parentElement
+      .querySelectorAll("button")
+      .forEach((b) => b.classList.toggle("active", b === filter));
     return;
   }
-  const banner = e.target.closest('.banner-dismiss');
-  if (banner) banner.closest('.preview-banner').remove();
-  const period = e.target.closest('.period-select button');
+
+  const banner = e.target.closest(".banner-dismiss");
+  if (banner) banner.closest(".preview-banner").remove();
+
+  const period = e.target.closest(".period-select button");
+
   if (period) {
-    period.parentElement.querySelectorAll('button').forEach(b => b.classList.toggle('chosen', b === period));
-    toast('Chart period updated in preview.');
+    period.parentElement
+      .querySelectorAll("button")
+      .forEach((b) => b.classList.toggle("chosen", b === period));
+    toast("Chart period updated in preview.");
   }
 });
 
-document.querySelector('.menu-toggle')?.addEventListener('click', () => {
-  document.querySelector('.platform-sidebar')?.classList.toggle('open');
-  document.querySelector('.mobile-shade')?.classList.toggle('visible');
+document.querySelector(".menu-toggle")?.addEventListener("click", () => {
+  document.querySelector(".platform-sidebar")?.classList.toggle("open");
+  document.querySelector(".mobile-shade")?.classList.toggle("visible");
 });
 
-document.querySelector('.mobile-shade')?.addEventListener('click', () => {
-  document.querySelector('.platform-sidebar')?.classList.remove('open');
-  document.querySelector('.mobile-shade')?.classList.remove('visible');
+document.querySelector(".mobile-shade")?.addEventListener("click", () => {
+  document.querySelector(".platform-sidebar")?.classList.remove("open");
+  document.querySelector(".mobile-shade")?.classList.remove("visible");
 });
 
-document.querySelector('.top-search input')?.addEventListener('keydown', e => {
-  if (e.key === 'Enter') {
-    navigate('markets');
-    document.querySelector('.table-search')?.focus();
-  }
-});
+document
+  .querySelector(".top-search input")
+  ?.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      navigate("markets");
+      document.querySelector(".table-search")?.focus();
+    }
+  });
 
-document.addEventListener('keydown', e => {
-  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+document.addEventListener("keydown", (e) => {
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
     e.preventDefault();
-    document.querySelector('.top-search input')?.focus();
+    document.querySelector(".top-search input")?.focus();
   }
 });
 
-window.addEventListener('resize', () => {
+window.addEventListener("resize", () => {
   clearTimeout(window.__chartResize);
   window.__chartResize = setTimeout(() => {
-    renderChart(document.getElementById('portfolioChart'));
-    renderChart(document.getElementById('tradeChart'));
+    renderChart(document.getElementById("portfolioChart"));
+    renderChart(document.getElementById("tradeChart"));
   }, 120);
 });
 
-navigate('overview');
-
+navigate("overview");
 
 // ==========================================
 // 5. AUTHENTICATED BACKEND DATA & SYNC
@@ -287,256 +389,405 @@ navigate('overview');
 
 function atomicDisplay(raw, decimals) {
   const scale = 10n ** BigInt(decimals);
-  const value = BigInt(raw || '0');
+  const value = BigInt(raw || "0");
   const whole = value / scale;
-  const fraction = (value % scale).toString().padStart(decimals, '0').replace(/0+$/, '');
-  return `${whole}${fraction ? '.' + fraction : ''}`;
+  const fraction = (value % scale)
+    .toString()
+    .padStart(decimals, "0")
+    .replace(/0+$/, "");
+
+  return `${whole}${fraction ? "." + fraction : ""}`;
+}
+
+function getTimeGreeting(name, date = new Date()) {
+  const hour = date.getHours();
+  const partOfDay =
+    hour >= 5 && hour < 12
+      ? "Good morning"
+      : hour >= 12 && hour < 18
+        ? "Good afternoon"
+        : hour >= 18 && hour < 22
+          ? "Good evening"
+          : "Good night";
+
+  return `${partOfDay}, ${name}`;
 }
 
 function renderConnectedAccount() {
-  if (!liveWallet) return;
-  const email = liveProfile?.email || '';
-  const displayName = liveProfile?.displayName || email.split('@')[0] || 'Customer';
-  const profileName = document.querySelector('.profile-text b');
+  const email =
+    liveProfile?.email || window.CryptoWiseAuth?.currentUser?.()?.email || "";
+  const firebaseName =
+    window.CryptoWiseAuth?.currentUser?.()?.displayName || "";
+  const displayName =
+    liveProfile?.displayName ||
+    firebaseName ||
+    email.split("@")[0] ||
+    "Customer";
+
+  const profileName = document.querySelector(".profile-text b");
   if (profileName) profileName.textContent = displayName;
-  const greeting = document.querySelector('#pageContent .page-heading h1');
-  if (currentPage === 'overview' && greeting) greeting.textContent = `Welcome, ${displayName}`;
+
+  const greeting = document.querySelector("#pageContent .page-heading h1");
+  if (currentPage === "overview" && greeting)
+    greeting.textContent = getTimeGreeting(displayName);
+
   const nameParts = displayName.trim().split(/\s+/);
-  const firstName = document.querySelector('[data-profile-first]');
-  const lastName = document.querySelector('[data-profile-last]');
-  const emailField = document.querySelector('[data-profile-email]');
-  if (firstName) firstName.value = nameParts.shift() || '';
-  if (lastName) lastName.value = nameParts.join(' ');
+  const firstName = document.querySelector("[data-profile-first]");
+  const lastName = document.querySelector("[data-profile-last]");
+  const emailField = document.querySelector("[data-profile-email]");
+
+  if (firstName) firstName.value = nameParts.shift() || "";
+  if (lastName) lastName.value = nameParts.join(" ");
   if (emailField) emailField.value = email;
 
-  const metricValues = document.querySelectorAll('#pageContent .metric-card .metric-value');
-  metricValues.forEach(x => x.textContent = '—');
-  document.querySelectorAll('#pageContent .metric-card .metric-foot').forEach(x => x.textContent = 'Not available: trusted market pricing is not connected.');
+  const metricValues = document.querySelectorAll(
+    "#pageContent .metric-card .metric-value",
+  );
+  metricValues.forEach((x) => (x.textContent = "—"));
 
-  const assetPanel = document.querySelector('.overview-grid .panel:nth-child(2) .asset-list');
+  document
+    .querySelectorAll("#pageContent .metric-card .metric-foot")
+    .forEach(
+      (x) =>
+        (x.textContent =
+          "Not available: trusted market pricing is not connected."),
+    );
+
+  const assetPanel = document.querySelector(
+    ".overview-grid .panel:nth-child(2) .asset-list",
+  );
+
   if (assetPanel) {
-    assetPanel.querySelectorAll('.asset-line').forEach(row => {
-      const symbol = row.querySelector('.asset-name small')?.textContent?.trim();
-      if (!['ETH', 'USDT'].includes(symbol)) {
+    assetPanel.querySelectorAll(".asset-line").forEach((row) => {
+      const symbol = row
+        .querySelector(".asset-name small")
+        ?.textContent?.trim();
+
+      if (!["ETH", "USDT"].includes(symbol)) {
         row.remove();
         return;
       }
-      row.querySelector('.asset-holding b').textContent = `${atomicDisplay(liveWallet.availableAtomic?.[symbol], symbol === 'ETH' ? 18 : 6)} ${symbol}`;
-      row.querySelector('.asset-holding small').textContent = 'Available balance';
-      row.querySelector('.asset-change').textContent = 'USD value unavailable';
+
+      row.querySelector(".asset-holding b").textContent =
+        `${atomicDisplay(liveWallet.availableAtomic?.[symbol], symbol === "ETH" ? 18 : 6)} ${symbol}`;
+      row.querySelector(".asset-holding small").textContent =
+        "Available balance";
+      row.querySelector(".asset-change").textContent = "USD value unavailable";
     });
   }
 
-  document.querySelectorAll('.wallet-grid .panel').forEach(panel => {
-    const label = panel.querySelector('.wallet-asset small')?.textContent || '';
-    const asset = ['ETH', 'USDT'].find(x => label.includes(x));
+  document.querySelectorAll(".wallet-grid .panel").forEach((panel) => {
+    const label = panel.querySelector(".wallet-asset small")?.textContent || "";
+    const asset = ["ETH", "USDT"].find((x) => label.includes(x));
+
     if (!asset) return;
-    panel.querySelector('.wallet-balance').textContent = `${atomicDisplay(liveWallet.availableAtomic?.[asset], asset === 'ETH' ? 18 : 6)} ${asset}`;
-    panel.querySelector('.wallet-equivalent').textContent = 'USD value unavailable until a trusted price feed is connected.';
+
+    panel.querySelector(".wallet-balance").textContent =
+      `${atomicDisplay(liveWallet.availableAtomic?.[asset], asset === "ETH" ? 18 : 6)} ${asset}`;
+    panel.querySelector(".wallet-equivalent").textContent =
+      "USD value unavailable until a trusted price feed is connected.";
   });
 
   const entries = liveWallet.transactions || [];
-  document.querySelectorAll('.activity-table tbody,.admin-table tbody').forEach(body => {
-    body.replaceChildren();
-    if (!entries.length) {
-      const row = document.createElement('tr'), cell = document.createElement('td');
-      cell.colSpan = 5;
-      cell.textContent = 'No account transactions yet.';
-      row.append(cell);
-      body.append(row);
-      return;
-    }
-    entries.forEach(entry => {
-      const row = document.createElement('tr');
-      const cells = [
-        entry.kind || 'Transaction',
-        `${atomicDisplay(entry.amountAtomic, entry.asset === 'ETH' ? 18 : 6)} ${entry.asset || ''}`,
-        entry.asset || '—',
-        entry.kind?.includes('hold') ? 'Reserved' : 'Posted',
-        entry.createdAt?.seconds ? new Date(entry.createdAt.seconds * 1000).toLocaleString() : '—'
-      ];
-      cells.forEach(value => {
-        const cell = document.createElement('td');
-        cell.textContent = value;
+
+  document
+    .querySelectorAll(".activity-table tbody,.admin-table tbody")
+    .forEach((body) => {
+      body.replaceChildren();
+
+      if (!entries.length) {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+
+        cell.colSpan = 5;
+        cell.textContent = "No account transactions yet.";
         row.append(cell);
+        body.append(row);
+        return;
+      }
+
+      entries.forEach((entry) => {
+        const row = document.createElement("tr");
+        const cells = [
+          entry.kind || "Transaction",
+          `${atomicDisplay(entry.amountAtomic, entry.asset === "ETH" ? 18 : 6)} ${entry.asset || ""}`,
+          entry.asset || "—",
+          entry.kind?.includes("hold") ? "Reserved" : "Posted",
+          entry.createdAt?.seconds
+            ? new Date(entry.createdAt.seconds * 1000).toLocaleString()
+            : "—",
+        ];
+
+        cells.forEach((value) => {
+          const cell = document.createElement("td");
+          cell.textContent = value;
+          row.append(cell);
+        });
+
+        body.append(row);
       });
-      body.append(row);
     });
-  });
 }
 
 async function connectCustomerApi() {
-  const badge = document.querySelector('.demo-indicator');
+  const badge = document.querySelector(".demo-indicator");
+
   try {
     const health = await window.CryptoWiseAPI.health();
-    if (badge) badge.textContent = health.status === 'ok' ? 'API connected' : 'API unavailable';
+    if (badge)
+      badge.textContent =
+        health.status === "ok" ? "API connected" : "API unavailable";
   } catch {
-    if (badge) badge.textContent = 'API offline · preview';
+    if (badge) badge.textContent = "API offline · preview";
   }
 
-  const connect = async auth => {
+  const connect = async (auth) => {
     if (!auth?.configured || !auth.isSignedIn()) return;
+
+    const firebaseUser = auth.currentUser?.();
+
+    // Render the user's identity and local-time greeting immediately after Firebase login,
+    // even if the backend API is still waking up or temporarily unavailable.
+    liveProfile = {
+      displayName: firebaseUser?.displayName || null,
+      email: firebaseUser?.email || null,
+    };
+
+    renderConnectedAccount();
+
     try {
       window.CryptoWiseAPI.setTokenProvider(auth.getIdToken);
-      [liveProfile, liveWallet] = await Promise.all([window.CryptoWiseAPI.me(), window.CryptoWiseAPI.wallet()]);
+
+      const [profile, wallet] = await Promise.all([
+        window.CryptoWiseAPI.me(),
+        window.CryptoWiseAPI.wallet(),
+      ]);
+
+      liveProfile = {
+        ...profile,
+        displayName: firebaseUser?.displayName || profile.displayName || null,
+        email: firebaseUser?.email || profile.email || null,
+      };
+      liveWallet = wallet;
+
       renderConnectedAccount();
-      if (currentPage === 'deposit') loadDepositPage();
+
+      if (currentPage === "deposit") loadDepositPage();
     } catch (error) {
-      if (badge) badge.textContent = 'API error · preview';
-      console.warn('CryptoWise API request failed:', error.message);
+      if (badge) badge.textContent = "API error · preview";
+      console.warn("CryptoWise API request failed:", error.message);
     }
   };
 
   if (window.CryptoWiseAuthReady) connect(await window.CryptoWiseAuthReady);
-  else window.addEventListener('cryptowise-auth-ready', () => connect(window.CryptoWiseAuth), { once: true });
+  else
+    window.addEventListener(
+      "cryptowise-auth-ready",
+      () => connect(window.CryptoWiseAuth),
+      { once: true },
+    );
 }
 
 connectCustomerApi();
 
-document.addEventListener('click', e => {
-  if (e.target.closest('[data-sign-out]')) {
+document.addEventListener("click", (e) => {
+  if (e.target.closest("[data-sign-out]")) {
     e.preventDefault();
-    Promise.resolve(window.CryptoWiseAuthReady).then(auth => auth?.signOut()).finally(() => window.location.replace('index.html'));
+
+    Promise.resolve(window.CryptoWiseAuthReady)
+      .then((auth) => auth?.signOut())
+      .finally(() => window.location.replace("index.html"));
   }
 });
-
 
 // ==========================================
 // 6. DEPOSIT MANAGEMENT & API HANDLERS
 // ==========================================
 
 function depositDate(value) {
-  if (!value) return '—';
-  if (typeof value.toDate === 'function') return value.toDate().toLocaleString();
+  if (!value) return "—";
+  if (typeof value.toDate === "function")
+    return value.toDate().toLocaleString();
+
   const seconds = value.seconds ?? value._seconds;
-  if (typeof seconds === 'number') return new Date(seconds * 1000).toLocaleString();
+  if (typeof seconds === "number")
+    return new Date(seconds * 1000).toLocaleString();
+
   const date = new Date(value);
-  return Number.isNaN(date.valueOf()) ? '—' : date.toLocaleString();
+  return Number.isNaN(date.valueOf()) ? "—" : date.toLocaleString();
 }
 
 function updateDepositAssetDisplay() {
-  const note = document.getElementById('depositNetworkNote');
-  const address = document.getElementById('depositAddress');
-  const details = document.getElementById('depositAssetDetails');
-  const form = document.getElementById('depositRequestForm');
-  const copy = document.getElementById('copyDepositAddress');
-  const badge = document.getElementById('depositAvailability');
-  const select = document.getElementById('depositAsset');
-  
+  const note = document.getElementById("depositNetworkNote");
+  const address = document.getElementById("depositAddress");
+  const details = document.getElementById("depositAssetDetails");
+  const form = document.getElementById("depositRequestForm");
+  const copy = document.getElementById("copyDepositAddress");
+  const badge = document.getElementById("depositAvailability");
+  const select = document.getElementById("depositAsset");
+
   if (!note || !address || !details || !form || !select) return;
-  
-  const asset = (liveDepositInstructions?.assets || []).find(x => x.asset === select.value);
+
+  const asset = (liveDepositInstructions?.assets || []).find(
+    (x) => x.asset === select.value,
+  );
   const enabled = liveDepositInstructions?.enabled === true && !!asset?.address;
-  
-  note.textContent = liveDepositInstructions?.notice || liveDepositInstructions?.reason || 'Deposits are paused.';
-  address.textContent = enabled ? asset.address : 'No active receiving address';
-  details.textContent = enabled ? `${asset.asset} · ${liveDepositInstructions.network} · ${asset.tokenContract ? 'Token contract: ' + asset.tokenContract : 'Native asset'}` : 'No verified deposit instructions are active. Do not send assets.';
+
+  note.textContent =
+    liveDepositInstructions?.notice ||
+    liveDepositInstructions?.reason ||
+    "Deposits are paused.";
+  address.textContent = enabled ? asset.address : "No active receiving address";
+  details.textContent = enabled
+    ? `${asset.asset} · ${liveDepositInstructions.network} · ${asset.tokenContract ? "Token contract: " + asset.tokenContract : "Native asset"}`
+    : "No verified deposit instructions are active. Do not send assets.";
+
   form.hidden = !enabled;
   if (copy) copy.hidden = !enabled;
+
   if (badge) {
-    badge.textContent = enabled ? 'Available' : 'Paused';
-    badge.className = `status ${enabled ? '' : 'pending'}`;
+    badge.textContent = enabled ? "Available" : "Paused";
+    badge.className = `status ${enabled ? "" : "pending"}`;
   }
 }
 
 function renderDepositRequests(requests) {
-  const host = document.getElementById('depositRequestsList');
+  const host = document.getElementById("depositRequestsList");
   if (!host) return;
+
   host.replaceChildren();
-  
+
   if (!requests?.length) {
-    host.textContent = 'No deposit requests yet.';
+    host.textContent = "No deposit requests yet.";
     return;
   }
-  
-  const wrap = document.createElement('div');
-  wrap.className = 'table-wrap';
-  const table = document.createElement('table');
-  table.className = 'activity-table';
-  
-  const thead = document.createElement('thead'), head = document.createElement('tr');
-  ['ASSET', 'TRANSACTION HASH', 'STATUS', 'UPDATED'].forEach(label => {
-    const th = document.createElement('th');
+
+  const wrap = document.createElement("div");
+  wrap.className = "table-wrap";
+
+  const table = document.createElement("table");
+  table.className = "activity-table";
+
+  const thead = document.createElement("thead");
+  const head = document.createElement("tr");
+
+  ["ASSET", "TRANSACTION HASH", "STATUS", "UPDATED"].forEach((label) => {
+    const th = document.createElement("th");
     th.textContent = label;
     head.append(th);
   });
+
   thead.append(head);
   table.append(thead);
-  
-  const body = document.createElement('tbody');
-  requests.forEach(request => {
-    const row = document.createElement('tr');
-    const values = [request.asset || '—', request.txHash || '—', request.status || '—', depositDate(request.updatedAt)];
+
+  const body = document.createElement("tbody");
+
+  requests.forEach((request) => {
+    const row = document.createElement("tr");
+    const values = [
+      request.asset || "—",
+      request.txHash || "—",
+      request.status || "—",
+      depositDate(request.updatedAt),
+    ];
+
     values.forEach((value, index) => {
-      const cell = document.createElement('td');
-      cell.textContent = index === 1 && String(value).length > 18 ? `${String(value).slice(0, 10)}…${String(value).slice(-8)}` : String(value);
+      const cell = document.createElement("td");
+      cell.textContent =
+        index === 1 && String(value).length > 18
+          ? `${String(value).slice(0, 10)}…${String(value).slice(-8)}`
+          : String(value);
       row.append(cell);
     });
+
     body.append(row);
   });
-  
+
   table.append(body);
   wrap.append(table);
   host.append(wrap);
 }
 
 async function loadDepositPage() {
-  const note = document.getElementById('depositNetworkNote');
-  const list = document.getElementById('depositRequestsList');
+  const note = document.getElementById("depositNetworkNote");
+  const list = document.getElementById("depositRequestsList");
+
   if (!note || !window.CryptoWiseAPI) return;
+
   if (!liveProfile) {
-    note.textContent = 'Sign in to load deposit availability.';
-    if (list) list.textContent = 'Sign in to load your deposit requests.';
+    note.textContent = "Sign in to load deposit availability.";
+    if (list) list.textContent = "Sign in to load your deposit requests.";
     return;
   }
+
   try {
-    const [instructions, history] = await Promise.all([window.CryptoWiseAPI.depositInstructions(), window.CryptoWiseAPI.depositRequests()]);
+    const [instructions, history] = await Promise.all([
+      window.CryptoWiseAPI.depositInstructions(),
+      window.CryptoWiseAPI.depositRequests(),
+    ]);
+
     liveDepositInstructions = instructions;
     updateDepositAssetDisplay();
     renderDepositRequests(history.requests || []);
   } catch (error) {
     liveDepositInstructions = null;
     updateDepositAssetDisplay();
+
     note.textContent = `Could not load verified deposit instructions: ${error.message}.`;
-    if (list) list.textContent = 'Deposit request history is temporarily unavailable.';
+    if (list)
+      list.textContent = "Deposit request history is temporarily unavailable.";
   }
 }
 
-document.addEventListener('change', event => {
-  if (event.target.matches('#depositAsset')) updateDepositAssetDisplay();
+document.addEventListener("change", (event) => {
+  if (event.target.matches("#depositAsset")) updateDepositAssetDisplay();
 });
 
-document.addEventListener('submit', async event => {
-  if (!event.target.matches('#depositRequestForm')) return;
+document.addEventListener("submit", async (event) => {
+  if (!event.target.matches("#depositRequestForm")) return;
+
   event.preventDefault();
-  const form = event.target, button = form.querySelector('button[type=submit]');
+
+  const form = event.target;
+  const button = form.querySelector('button[type="submit"]');
+
   if (!liveDepositInstructions?.enabled) {
-    toast('Deposits are paused; no request was submitted.');
+    toast("Deposits are paused; no request was submitted.");
     return;
   }
+
   button.disabled = true;
+
   try {
-    const txHash = document.getElementById('depositTxHash').value.trim();
-    const result = await window.CryptoWiseAPI.createDepositRequest({ asset: document.getElementById('depositAsset').value, txHash, network: 'ethereum' });
-    toast(result.message || 'Deposit request submitted for tracking.');
+    const txHash = document.getElementById("depositTxHash").value.trim();
+
+    const result = await window.CryptoWiseAPI.createDepositRequest({
+      asset: document.getElementById("depositAsset").value,
+      txHash,
+      network: "ethereum",
+    });
+
+    toast(result.message || "Deposit request submitted for tracking.");
     form.reset();
     await loadDepositPage();
   } catch (error) {
-    toast(error.message || 'Deposit request could not be submitted.');
+    toast(error.message || "Deposit request could not be submitted.");
   } finally {
     button.disabled = false;
   }
 });
 
-document.addEventListener('click', async event => {
-  const button = event.target.closest('#copyDepositAddress');
+document.addEventListener("click", async (event) => {
+  const button = event.target.closest("#copyDepositAddress");
   if (!button) return;
-  const value = document.getElementById('depositAddress')?.textContent || '';
-  if (!value || value === 'No active receiving address') return;
+
+  const value = document.getElementById("depositAddress")?.textContent || "";
+  if (!value || value === "No active receiving address") return;
+
   try {
     await navigator.clipboard.writeText(value);
-    toast('Receiving address copied. Verify it carefully before sending.');
+    toast("Receiving address copied. Verify it carefully before sending.");
   } catch {
-    toast('Could not copy the address.');
+    toast("Could not copy the address.");
   }
 });
