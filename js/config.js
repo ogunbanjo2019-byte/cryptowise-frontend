@@ -6,9 +6,6 @@ window.CW_API_CONFIG = Object.freeze({
   requestTimeoutMs: 12000
 });
 
-/* Public Firebase Web App configuration belongs here. It is not a service-account secret.
-   Copy values from Firebase Console > Project settings > Your apps > Web app.
-   Keep the private Firebase Admin service-account JSON only in Render secrets. */
 window.CW_FIREBASE_CONFIG = Object.freeze({
   apiKey: "AIzaSyAP7macADIcsHR9VbaN03l6eXurgG37JGM",
   authDomain: "cryptobase-4206e.firebaseapp.com",
