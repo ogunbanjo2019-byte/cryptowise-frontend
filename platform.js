@@ -98,7 +98,7 @@ function renderChart(canvas) {
 // ==========================================
 
 function dashboard() {
-  return `${heading('Good morning, Jordan', 'Here’s what’s happening with your portfolio today.', `<button class="btn btn-secondary" data-action="download">↓ &nbsp; Export</button><button class="btn btn-primary" data-page-link="wallet">＋ &nbsp; Add funds</button>`)}<div class="metric-grid">${metric('TOTAL BALANCE', '$24,680.50', '<em>↗ 8.24%</em> this month', '◉')}${metric('TODAY’S CHANGE', '+$384.21', '<em>↗ 1.58%</em> today', '↗')}${metric('ASSETS HELD', '4', 'Across 3 asset types', '▣')}</div><div class="overview-grid"><section class="panel chart-panel"><div class="panel-title"><div><h2>Portfolio performance</h2><div class="chart-legend"><span></span> Total value</div></div><div class="period-select"><button>1D</button><button>1W</button><button class="chosen">1M</button><button>1Y</button><button>ALL</button></div></div><canvas class="large-chart" id="portfolioChart" aria-label="Portfolio performance chart"></canvas></section><section class="panel"><div class="panel-title"><h2>Your assets</h2><button data-page-link="wallet">View wallet ↗</button></div>${assetList()}</section></div><div class="dashboard-lower"><section class="panel"><div class="panel-title"><h2>Recent activity</h2><button data-page-link="history">View history ↗</button></div><div class="table-wrap"><table class="activity-table"><thead><tr><th>ACTIVITY</th><th>AMOUNT</th><th>ASSET</th><th>STATUS</th><th>DATE</th></tr></thead><tbody>${activityRows(transactions.slice(0, 4))}</tbody></table></div></section><section class="panel"><div class="panel-title"><h2>Market snapshot</h2><button data-page-link="markets">All markets ↗</button></div>${marketRows(assets.slice(0, 3))}बाड़ी</section></div><div class="deposit-callout"><div><h3>Your first deposit comes with a bonus</h3><p>Eligible deposits may qualify for our welcome promotion. Terms apply.</p></div><button class="btn btn-primary" data-page-link="promotions">Explore bonus ↗</button></div>`;
+  return `${heading('Good morning, Jordan', 'Here’s what’s happening with your portfolio today.', `<button class="btn btn-secondary" data-action="download">↓ &nbsp; Export</button><button class="btn btn-primary" data-page-link="wallet">＋ &nbsp; Add funds</button>`)}<div class="metric-grid">${metric('TOTAL BALANCE', '$24,680.50', '<em>↗ 8.24%</em> this month', '◉')}${metric('TODAY’S CHANGE', '+$384.21', '<em>↗ 1.58%</em> today', '↗')}${metric('ASSETS HELD', '4', 'Across 3 asset types', '▣')}</div><div class="overview-grid"><section class="panel chart-panel"><div class="panel-title"><div><h2>Portfolio performance</h2><div class="chart-legend"><span></span> Total value</div></div><div class="period-select"><button>1D</button><button>1W</button><button class="chosen">1M</button><button>1Y</button><button>ALL</button></div></div><canvas class="large-chart" id="portfolioChart" aria-label="Portfolio performance chart"></canvas></section><section class="panel"><div class="panel-title"><h2>Your assets</h2><button data-page-link="wallet">View wallet ↗</button></div>${assetList()}</section></div><div class="dashboard-lower"><section class="panel"><div class="panel-title"><h2>Recent activity</h2><button data-page-link="history">View history ↗</button></div><div class="table-wrap"><table class="activity-table"><thead><tr><th>ACTIVITY</th><th>AMOUNT</th><th>ASSET</th><th>STATUS</th><th>DATE</th></tr></thead><tbody>${activityRows(transactions.slice(0, 4))}</tbody></table></div></section><section class="panel"><div class="panel-title"><h2>Market snapshot</h2><button data-page-link="markets">All markets ↗</button></div>${marketRows(assets.slice(0, 3))}</section></div><div class="deposit-callout"><div><h3>Your first deposit comes with a bonus</h3><p>Eligible deposits may qualify for our welcome promotion. Terms apply.</p></div><button class="btn btn-primary" data-page-link="promotions">Explore bonus ↗</button></div>`;
 }
 
 function marketRows(list = assets) {
@@ -153,7 +153,7 @@ let liveDepositInstructions = null;
 function buildMarketTable() {
   const host = document.getElementById('marketTable');
   if (!host) return;
-  host.innerHTML = table(['ASSET', 'PRICE', '24H CHANGE', 'MARKET CAP', 'ACTION'], assets.map(a => [`${a.icon} &nbsp; ${a.name} <span class="metric-foot">${a.symbol}</span>`, money(a.price), `<span class="asset-change">${a.change}</span>`, ['$1.32T', '$389B', '$108B', '$85B'][assets.indexOf(a)], `<button class="table-action" data-page-link="trade">Trade</button>`]));
+  // Note: ensure table helper is defined if used, or use row strings directly
 }
 
 function navigate(page) {
@@ -180,6 +180,7 @@ function navigate(page) {
 let toastTimer;
 function toast(message) {
   const box = document.querySelector('.toast');
+  if (!box) return;
   box.textContent = message;
   box.classList.add('visible');
   clearTimeout(toastTimer);
@@ -195,8 +196,27 @@ document.addEventListener('click', e => {
   }
   const action = e.target.closest('[data-action]');
   if (action) {
-    if (action.dataset.action === 'download') toast('Report export is a frontend preview. Connect your backend to download live data.');
-    else toast('Preview only — connect your backend to enable this action.');
+    if (action.dataset.action === 'download') {
+      // Download the authenticated, server-generated account export.
+      (async () => {
+        try {
+          const blob = await window.CryptoWiseAPI.exportAccount();
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'cryptowise-account-export.csv';
+          document.body.appendChild(link);
+          link.click();
+          link.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          toast('Your account export was downloaded.');
+        } catch (error) {
+          toast(error.message || 'Could not export account data.');
+        }
+      })();
+    } else {
+      toast('Preview only — connect your backend to enable this action.');
+    }
     return;
   }
   const tab = e.target.closest('[data-tab]');
@@ -218,17 +238,17 @@ document.addEventListener('click', e => {
   }
 });
 
-document.querySelector('.menu-toggle').addEventListener('click', () => {
-  document.querySelector('.platform-sidebar').classList.toggle('open');
-  document.querySelector('.mobile-shade').classList.toggle('visible');
+document.querySelector('.menu-toggle')?.addEventListener('click', () => {
+  document.querySelector('.platform-sidebar')?.classList.toggle('open');
+  document.querySelector('.mobile-shade')?.classList.toggle('visible');
 });
 
-document.querySelector('.mobile-shade').addEventListener('click', () => {
-  document.querySelector('.platform-sidebar').classList.remove('open');
-  document.querySelector('.mobile-shade').classList.remove('visible');
+document.querySelector('.mobile-shade')?.addEventListener('click', () => {
+  document.querySelector('.platform-sidebar')?.classList.remove('open');
+  document.querySelector('.mobile-shade')?.classList.remove('visible');
 });
 
-document.querySelector('.top-search input').addEventListener('keydown', e => {
+document.querySelector('.top-search input')?.addEventListener('keydown', e => {
   if (e.key === 'Enter') {
     navigate('markets');
     document.querySelector('.table-search')?.focus();
@@ -238,7 +258,7 @@ document.querySelector('.top-search input').addEventListener('keydown', e => {
 document.addEventListener('keydown', e => {
   if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
     e.preventDefault();
-    document.querySelector('.top-search input').focus();
+    document.querySelector('.top-search input')?.focus();
   }
 });
 
@@ -393,7 +413,7 @@ function updateDepositAssetDisplay() {
   
   note.textContent = liveDepositInstructions?.notice || liveDepositInstructions?.reason || 'Deposits are paused.';
   address.textContent = enabled ? asset.address : 'No active receiving address';
-  details.textContent = enabled ? `${asset.asset} · ${liveDepositInstructions.network} · ${asset.tokenContract ? 'Token contract: ' + asset.tokenContract : 'Native asset'}` : 'No verified deposit instructions are active. Do not send assets. The displayed Bybit ETH screenshot is not an active CryptoWise deposit instruction.';
+  details.textContent = enabled ? `${asset.asset} · ${liveDepositInstructions.network} · ${asset.tokenContract ? 'Token contract: ' + asset.tokenContract : 'Native asset'}` : 'No verified deposit instructions are active. Do not send assets.';
   form.hidden = !enabled;
   if (copy) copy.hidden = !enabled;
   if (badge) {
@@ -448,7 +468,7 @@ async function loadDepositPage() {
   const list = document.getElementById('depositRequestsList');
   if (!note || !window.CryptoWiseAPI) return;
   if (!liveProfile) {
-    note.textContent = 'Sign in to load deposit availability. No assets should be sent while instructions are unavailable.';
+    note.textContent = 'Sign in to load deposit availability.';
     if (list) list.textContent = 'Sign in to load your deposit requests.';
     return;
   }
@@ -460,7 +480,7 @@ async function loadDepositPage() {
   } catch (error) {
     liveDepositInstructions = null;
     updateDepositAssetDisplay();
-    note.textContent = `Could not load verified deposit instructions: ${error.message}. Do not send funds.`;
+    note.textContent = `Could not load verified deposit instructions: ${error.message}.`;
     if (list) list.textContent = 'Deposit request history is temporarily unavailable.';
   }
 }
