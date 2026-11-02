@@ -1,15 +1,26 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#071a23"><meta name="description" content="CryptoWise — a smarter place to explore markets, manage your crypto portfolio, and trade with confidence.">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#071a23">
+  <meta name="description" content="CryptoWise — a smarter place to explore markets, manage your crypto portfolio, and trade with confidence.">
   <title>CryptoWise — Trade smarter. Grow faster.</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css">
   
-  <script src="api/config.js" defer></script>
-  <script src="api/client.js" defer></script>
-  <script type="module" src="api/firebase-auth.js"></script>
+  <!-- 1. Load configuration first from the js folder -->
+  <script src="js/config.js" defer></script>
+  
+  <!-- 2. Load API client second -->
+  <script src="js/client.js" defer></script>
+  
+  <!-- 3. Load Firebase Authentication module third -->
+  <script type="module" src="js/firebase-auth.js"></script>
+  
+  <!-- 4. Load main application script last -->
   <script src="app.js" defer></script>
 </head>
 <body>
