@@ -131,7 +131,7 @@ function promotionsPage(admin = false) {
 }
 
 function settingsPage() {
-  return `${heading('Settings', 'Manage your profile and interface preferences.')}<div class="settings-layout"><nav class="settings-nav"><button class="active">Profile</button><button>Security</button><button>Notifications</button><button>Preferences</button></nav><section class="panel"><div class="panel-title"><h2>Personal information</h2><span class="status">Preview</span></div><div class="form-grid"><div class="form-field"><label>First name</label><input value="Jordan"></div><div class="form-field"><label>Last name</label><input value="Davis"></div><div class="form-field"><label>Email address</label><input value="jordan.d@example.com" type="email"></div><div class="form-field"><label>Display currency</label><select><option>USD — US Dollar</option></select></div></div><div class="notice-card" style="margin-top:15px">Profile edits are not saved in preview mode. Authentication, password updates, multi-factor authentication, and account recovery require a secure identity backend.</div><button class="btn btn-primary" style="margin-top:10px" data-action="notify">Save changes</button></section></div>`;
+  return `${heading('Settings', 'Manage your profile and interface preferences.')}<div class="settings-layout"><nav class="settings-nav"><button class="active">Profile</button><button>Security</button><button>Notifications</button><button>Preferences</button></nav><section class="panel"><div class="panel-title"><h2>Personal information</h2><span class="status">Preview</span></div><div class="form-grid"><div class="form-field"><label>First name</label><input data-profile-first value="">/div><div class="form-field"><label>Last name</label><input data-profile-last value="">/div><div class="form-field"><label>Email address</label><input data-profile-email type="email" value=""></div><div class="form-field"><label>Display currency</label><select><option>USD — US Dollar</option></select></div></div><div class="notice-card" style="margin-top:15px">Profile edits are not saved in preview mode. Authentication, password updates, multi-factor authentication, and account recovery require a secure identity backend.</div><button class="btn btn-primary" style="margin-top:10px" data-action="notify">Save changes</button></section></div>`;
 }
 
 const views = {
@@ -197,21 +197,29 @@ document.addEventListener('click', e => {
   const action = e.target.closest('[data-action]');
   if (action) {
     if (action.dataset.action === 'download') {
-      // Download the authenticated, server-generated account export.
+      // Live backend export integration
       (async () => {
         try {
-          const blob = await window.CryptoWiseAPI.exportAccount();
-          const url = URL.createObjectURL(blob);
-          const link = document.createElement('a');
-          link.href = url;
-          link.download = 'cryptowise-account-export.csv';
-          document.body.appendChild(link);
-          link.click();
-          link.remove();
-          setTimeout(() => URL.revokeObjectURL(url), 1000);
-          toast('Your account export was downloaded.');
+          const token = window.CryptoWiseAuth?.isSignedIn?.() ? await window.CryptoWiseAuth.getIdToken() : null;
+          const response = await fetch('https://cryptowise-backend.onrender.com/api/export', {
+            method: 'GET',
+            headers: {
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            }
+          });
+          if (!response.ok) throw new Error('Failed to download report from backend');
+          const blob = await response.blob();
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = 'cryptowise-report.csv';
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          toast('Report downloaded successfully!');
         } catch (error) {
-          toast(error.message || 'Could not export account data.');
+          console.error(error);
+          toast('Could not download live report from backend.');
         }
       })();
     } else {
@@ -287,10 +295,19 @@ function atomicDisplay(raw, decimals) {
 
 function renderConnectedAccount() {
   if (!liveWallet) return;
+  const email = liveProfile?.email || '';
+  const displayName = liveProfile?.displayName || email.split('@')[0] || 'Customer';
   const profileName = document.querySelector('.profile-text b');
-  if (profileName) profileName.textContent = liveProfile?.displayName || liveProfile?.email || 'Customer';
+  if (profileName) profileName.textContent = displayName;
   const greeting = document.querySelector('#pageContent .page-heading h1');
-  if (currentPage === 'overview' && greeting) greeting.textContent = `Welcome, ${liveProfile?.displayName || 'Customer'}`;
+  if (currentPage === 'overview' && greeting) greeting.textContent = `Welcome, ${displayName}`;
+  const nameParts = displayName.trim().split(/\s+/);
+  const firstName = document.querySelector('[data-profile-first]');
+  const lastName = document.querySelector('[data-profile-last]');
+  const emailField = document.querySelector('[data-profile-email]');
+  if (firstName) firstName.value = nameParts.shift() || '';
+  if (lastName) lastName.value = nameParts.join(' ');
+  if (emailField) emailField.value = email;
 
   const metricValues = document.querySelectorAll('#pageContent .metric-card .metric-value');
   metricValues.forEach(x => x.textContent = '—');
