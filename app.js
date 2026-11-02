@@ -1,9 +1,6 @@
 'use strict';
 
-const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-  ? 'http://localhost:10000'
-  : 'https://cryptowise-backend.onrender.com';
-
+// 1. Market Data and Sparklines
 const marketData = [
   { symbol: 'BTC', name: 'Bitcoin', icon: '₿', className: 'coin-btc', price: '$67,432.21', change: '+2.34%', cap: '$1.32T', trend: [6,9,7,13,11,18,15,21,19,24,22,27,24,31,29,35,32,38,36,42] },
   { symbol: 'ETH', name: 'Ethereum', icon: '◆', className: 'coin-eth', price: '$3,245.67', change: '+1.18%', cap: '$389B', trend: [18,15,18,16,22,20,24,19,25,22,28,26,30,27,34,30,35,33,40,39] },
@@ -164,7 +161,7 @@ modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 document.getElementById('switchMode').addEventListener('click', () => setMode(!isLogin));
 
-// 5. Backend Form Submit Handler
+// 5. Firebase Authentication Form Submit Handler
 form.addEventListener('submit', async e => {
   e.preventDefault();
   const message = document.getElementById('formMessage');
@@ -173,32 +170,26 @@ form.addEventListener('submit', async e => {
   message.textContent = 'Connecting securely…';
   
   try {
+    const auth = await window.CryptoWiseWaitForAuth();
+    if (!auth?.configured) {
+      throw new Error('Firebase configuration is missing. Check api/config.js.');
+    }
+
     const email = document.getElementById('emailField').value.trim();
     const password = document.getElementById('passwordField').value;
-    const displayName = document.getElementById('nameField').value.trim();
-
-    const endpoint = isLogin ? `${API_URL}/api/auth/login` : `${API_URL}/api/auth/signup`;
-    const payload = isLogin ? { email, password } : { email, password, displayName };
-
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || 'Authentication failed.');
 
     if (isLogin) {
-      message.textContent = 'Signed in. Opening your account…';
-      if (data.token) localStorage.setItem('token', data.token);
+      await auth.signIn(email, password);
+      message.textContent = 'Signed in successfully. Opening your account…';
       window.location.href = 'app.html';
     } else {
-      message.textContent = 'Account created successfully! Please sign in.';
+      const displayName = document.getElementById('nameField').value.trim();
+      await auth.signUp({ email, password, displayName });
+      message.textContent = 'Account created successfully! Check your email for the verification link, then sign in.';
       setMode(true);
     }
   } catch (error) {
-    message.textContent = error.message || 'Sign-in failed. Please try again.';
+    message.textContent = error.message || 'Authentication failed. Please try again.';
   } finally {
     submit.disabled = false;
   }
