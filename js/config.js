@@ -10,11 +10,13 @@ window.CW_API_CONFIG = Object.freeze({
    Copy values from Firebase Console > Project settings > Your apps > Web app.
    Keep the private Firebase Admin service-account JSON only in Render secrets. */
 window.CW_FIREBASE_CONFIG = Object.freeze({
-  apiKey: 'REPLACE_WITH_FIREBASE_WEB_API_KEY',
-  authDomain: 'REPLACE_WITH_PROJECT.firebaseapp.com',
-  projectId: 'REPLACE_WITH_FIREBASE_PROJECT_ID',
-  appId: 'REPLACE_WITH_FIREBASE_WEB_APP_ID',
-  messagingSenderId: 'REPLACE_WITH_SENDER_ID'
+  apiKey: "AIzaSyAP7macADIcsHR9VbaN03l6eXurgG37JGM",
+  authDomain: "cryptobase-4206e.firebaseapp.com",
+  projectId: "cryptobase-4206e",
+  storageBucket: "cryptobase-4206e.firebasestorage.app",
+  messagingSenderId: "259567640543",
+  appId: "1:259567640543:web:c80dd21b8febc7999e6e6a",
+  measurementId: "G-P7M3V6V5RD"
 });
 
 window.CryptoWiseWaitForAuth = function() {
