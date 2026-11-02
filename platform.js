@@ -193,7 +193,52 @@ function promotionsPage(admin = false) {
 }
 
 function settingsPage() {
-  return `${heading("Settings", "Manage your profile and interface preferences.")}<div class="settings-layout"><nav class="settings-nav"><button class="active">Profile</button><button>Security</button><button>Notifications</button><button>Preferences</button></nav><section class="panel"><div class="panel-title"><h2>Personal information</h2><span class="status">Preview</span></div><div class="form-grid"><div class="form-field"><label>First name</label><input data-profile-first value=""></div><div class="form-field"><label>Last name</label><input data-profile-last value=""></div><div class="form-field"><label>Email address</label><input data-profile-email type="email" value=""></div><div class="form-field"><label>Username</label><input data-profile-username-field readonly value=""></div><div class="form-field"><label>Customer ID</label><input data-profile-customer-number readonly value=""></div><div class="form-field"><label>Display currency</label><select><option>USD — US Dollar</option></select></div></div><div class="notice-card" style="margin-top:15px">Profile edits are not saved in preview mode. Authentication, password updates, multi-factor authentication, and account recovery require a secure identity backend.</div><button class="btn btn-primary" style="margin-top:10px" data-action="notify">Save changes</button></section></div>`;
+  return `${heading("Settings", "Manage your profile, display currency, and notifications.")}
+    <div class="settings-layout">
+      <nav class="settings-nav" aria-label="Settings sections">
+        <button class="active" type="button" data-settings-tab="profile">Profile</button>
+        <button type="button" data-settings-tab="preferences">Preferences</button>
+        <button type="button" data-settings-tab="notifications">Notifications</button>
+        <button type="button" data-settings-tab="security">Security</button>
+      </nav>
+      <div class="settings-panels">
+        <section class="panel" data-settings-panel="profile">
+          <div class="panel-title"><h2>Personal information</h2><span class="status">Account</span></div>
+          <div class="form-grid">
+            <div class="form-field"><label>First name</label><input data-profile-first readonly value=""></div>
+            <div class="form-field"><label>Last name</label><input data-profile-last readonly value=""></div>
+            <div class="form-field"><label>Email address</label><input data-profile-email type="email" readonly value=""></div>
+            <div class="form-field"><label>Username</label><input data-profile-username-field readonly value=""></div>
+            <div class="form-field"><label>Customer ID</label><input data-profile-customer-number readonly value=""></div>
+          </div>
+          <div class="notice-card" style="margin-top:15px">Your username and Customer ID are assigned by the authenticated backend and stay the same on later logins.</div>
+        </section>
+        <section class="panel" data-settings-panel="preferences" hidden>
+          <div class="panel-title"><h2>Preferences</h2></div>
+          <div class="form-grid">
+            <div class="form-field"><label for="displayCurrency">Display currency</label>
+              <select id="displayCurrency">
+                <option value="USD">USD — US Dollar</option><option value="EUR">EUR — Euro</option><option value="GBP">GBP — British Pound</option><option value="CAD">CAD — Canadian Dollar</option><option value="AUD">AUD — Australian Dollar</option><option value="NZD">NZD — New Zealand Dollar</option><option value="JPY">JPY — Japanese Yen</option><option value="INR">INR — Indian Rupee</option><option value="NGN">NGN — Nigerian Naira</option><option value="GHS">GHS — Ghanaian Cedi</option><option value="ZAR">ZAR — South African Rand</option><option value="KES">KES — Kenyan Shilling</option>
+              </select>
+            </div>
+            <div class="form-field"><label for="accountTimeZone">Your device time zone</label><input id="accountTimeZone" readonly value=""></div>
+            <div class="form-field"><label><input id="emailNotificationPreference" type="checkbox" checked> Email notifications</label></div>
+            <div class="form-field"><label><input id="productNotificationPreference" type="checkbox" checked> Product updates</label></div>
+          </div>
+          <div class="notice-card" style="margin-top:12px">The greeting follows the time zone set on this device. Currency preference is saved to your account; accurate fiat conversion requires a trusted live crypto-price and FX feed.</div>
+          <button class="btn btn-primary" type="button" data-action="save-preferences" style="margin-top:12px">Save preferences</button>
+        </section>
+        <section class="panel" data-settings-panel="notifications" hidden>
+          <div class="panel-title"><h2>Your notifications</h2><button type="button" data-action="refresh-notifications">Refresh</button></div>
+          <div id="notificationsList" class="notice-card">Loading your notifications…</div>
+          <button class="btn btn-secondary" type="button" data-action="mark-all-notifications" style="margin-top:12px">Mark all as read</button>
+        </section>
+        <section class="panel" data-settings-panel="security" hidden>
+          <div class="panel-title"><h2>Security</h2></div>
+          <div class="notice-card">Use Firebase account security and recovery controls for password changes and multi-factor authentication. This app does not change passwords from this page.</div>
+        </section>
+      </div>
+    </div>`;
 }
 
 const views = {
@@ -234,6 +279,7 @@ function navigate(page) {
   window.scrollTo({ top: 0, behavior: "smooth" });
   if (liveProfile) renderConnectedAccount();
   if (currentPage === "deposit") loadDepositPage();
+  if (currentPage === "settings") loadUserPreferences();
 }
 
 // ==========================================
@@ -251,6 +297,34 @@ function toast(message) {
 }
 
 document.addEventListener("click", (e) => {
+  const settingsTab = e.target.closest("[data-settings-tab]");
+  if (settingsTab) {
+    document
+      .querySelectorAll("[data-settings-tab]")
+      .forEach((button) =>
+        button.classList.toggle("active", button === settingsTab),
+      );
+    document.querySelectorAll("[data-settings-panel]").forEach((panel) => {
+      panel.hidden =
+        panel.dataset.settingsPanel !== settingsTab.dataset.settingsTab;
+    });
+    if (settingsTab.dataset.settingsTab === "notifications")
+      loadUserNotifications();
+    if (settingsTab.dataset.settingsTab === "preferences")
+      loadUserPreferences();
+    return;
+  }
+  const readNotification = e.target.closest("[data-mark-notification]");
+  if (readNotification) {
+    window.CryptoWiseAPI.markNotificationRead(
+      readNotification.dataset.markNotification,
+    )
+      .then(loadUserNotifications)
+      .catch((error) =>
+        toast(error.message || "Could not mark notification as read."),
+      );
+    return;
+  }
   const nav = e.target.closest("[data-page], [data-page-link]");
   if (nav) {
     e.preventDefault();
@@ -259,6 +333,29 @@ document.addEventListener("click", (e) => {
   }
   const action = e.target.closest("[data-action]");
   if (action) {
+    if (action.dataset.action === "open-notifications") {
+      navigate("settings");
+      setTimeout(
+        () =>
+          document
+            .querySelector('[data-settings-tab="notifications"]')
+            ?.click(),
+        0,
+      );
+      return;
+    }
+    if (action.dataset.action === "save-preferences") {
+      saveUserPreferences();
+      return;
+    }
+    if (action.dataset.action === "refresh-notifications") {
+      loadUserNotifications();
+      return;
+    }
+    if (action.dataset.action === "mark-all-notifications") {
+      markAllNotificationsRead();
+      return;
+    }
     if (action.dataset.action === "download") {
       // Download the authenticated account export generated by the backend.
       (async () => {
@@ -500,6 +597,109 @@ function renderConnectedAccount() {
     });
 }
 
+function localTimeZone() {
+  return Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
+}
+
+async function loadUserPreferences() {
+  const currency = document.getElementById("displayCurrency");
+  const timezone = document.getElementById("accountTimeZone");
+  if (timezone) timezone.value = localTimeZone();
+  if (!window.CryptoWiseAPI?.preferences) return;
+  try {
+    const result = await window.CryptoWiseAPI.preferences();
+    if (currency && result.preferences?.displayCurrency) {
+      currency.value = result.preferences.displayCurrency;
+    }
+    const emailNotifications = document.getElementById(
+      "emailNotificationPreference",
+    );
+    const productNotifications = document.getElementById(
+      "productNotificationPreference",
+    );
+    if (emailNotifications)
+      emailNotifications.checked =
+        result.preferences?.notifications?.email ?? true;
+    if (productNotifications)
+      productNotifications.checked =
+        result.preferences?.notifications?.product ?? true;
+  } catch (error) {
+    toast(error.message || "Could not load your preferences.");
+  }
+}
+
+async function saveUserPreferences() {
+  const currency = document.getElementById("displayCurrency")?.value || "USD";
+  const timeZone = localTimeZone();
+  const payload = {
+    displayCurrency: currency,
+    timeZone,
+    notifications: {
+      email:
+        document.getElementById("emailNotificationPreference")?.checked ?? true,
+      product:
+        document.getElementById("productNotificationPreference")?.checked ??
+        true,
+    },
+  };
+  try {
+    await window.CryptoWiseAPI.savePreferences(payload);
+    toast("Preferences saved to your account.");
+  } catch (error) {
+    toast(error.message || "Could not save your preferences.");
+  }
+}
+
+async function loadUserNotifications() {
+  const host = document.getElementById("notificationsList");
+  if (!host) return;
+  host.textContent = "Loading your notifications…";
+  try {
+    const result = await window.CryptoWiseAPI.notifications();
+    const items = result.notifications || [];
+    host.replaceChildren();
+    if (!items.length) {
+      host.textContent = "You have no notifications yet.";
+      return;
+    }
+    items.forEach((item) => {
+      const card = document.createElement("article");
+      card.className = `notification-item ${item.readAt ? "" : "unread"}`;
+      const title = document.createElement("strong");
+      title.textContent = item.title || item.type || "CryptoWise notification";
+      const message = document.createElement("p");
+      message.textContent = item.message || item.body || "";
+      const date = document.createElement("small");
+      date.textContent = depositDate(item.createdAt);
+      card.append(title, message, date);
+      if (!item.readAt) {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = "Mark as read";
+        button.dataset.markNotification = item.id;
+        card.append(button);
+      }
+      host.append(card);
+    });
+  } catch (error) {
+    host.textContent = error.message || "Could not load notifications.";
+  }
+}
+
+async function markAllNotificationsRead() {
+  try {
+    const result = await window.CryptoWiseAPI.notifications();
+    const unread = (result.notifications || []).filter((item) => !item.readAt);
+    await Promise.all(
+      unread.map((item) => window.CryptoWiseAPI.markNotificationRead(item.id)),
+    );
+    await loadUserNotifications();
+    toast("Notifications marked as read.");
+  } catch (error) {
+    toast(error.message || "Could not update notifications.");
+  }
+}
+
 async function connectCustomerApi() {
   const badge = document.querySelector(".demo-indicator");
   try {
@@ -512,8 +712,9 @@ async function connectCustomerApi() {
   }
 
   const connect = async (auth) => {
-    if (!auth?.configured || !auth.isSignedIn()) return;
-    const firebaseUser = auth.currentUser?.();
+    if (!auth?.configured) return;
+    const firebaseUser = auth.currentUser?.() || (await auth.waitForUser());
+    if (!firebaseUser) return;
     // Render the user's identity and local-time greeting immediately after Firebase login,
     // even if the backend API is still waking up or temporarily unavailable.
     liveProfile = {
@@ -523,10 +724,7 @@ async function connectCustomerApi() {
     renderConnectedAccount();
     try {
       window.CryptoWiseAPI.setTokenProvider(auth.getIdToken);
-      const [profile, wallet] = await Promise.all([
-        window.CryptoWiseAPI.me(),
-        window.CryptoWiseAPI.wallet(),
-      ]);
+      const profile = await window.CryptoWiseAPI.me();
       liveProfile = {
         ...profile,
         displayName: firebaseUser?.displayName || profile.displayName || null,
@@ -534,9 +732,16 @@ async function connectCustomerApi() {
         username: profile.username || null,
         customerNumber: profile.customerNumber || null,
       };
-      liveWallet = wallet;
       renderConnectedAccount();
+      try {
+        liveWallet = await window.CryptoWiseAPI.wallet();
+        renderConnectedAccount();
+      } catch (walletError) {
+        if (badge) badge.textContent = "Profile connected · wallet unavailable";
+        console.warn("CryptoWise wallet request failed:", walletError.message);
+      }
       if (currentPage === "deposit") loadDepositPage();
+      if (currentPage === "settings") loadUserPreferences();
     } catch (error) {
       if (badge) badge.textContent = "API error · preview";
       console.warn("CryptoWise API request failed:", error.message);
