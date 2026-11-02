@@ -1,9 +1,148 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#07171f"><title>CryptoWise Platform</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="platform.css"><script src="platform.js" defer></script>  <script src="js/config.js" defer></script><script src="js/client.js" defer></script><script type="module" src="js/firebase-auth.js"></script>
-</head>
-<body class="platform-body">
-<header class="platform-header"><button class="menu-toggle" aria-label="Toggle navigation">☰</button><a class="brand" href="index.html"><span class="brand-mark"><svg viewBox="0 0 40 34" fill="none"><path d="M15.8 5.4 6 16.7l8.8 10.1L34 5.5" stroke="currentColor" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="m25.3 19.3 4.1 7.5 5.5-8" stroke="currentColor" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span class="brand-name">Crypto<span>Wise</span></span></a><div class="top-search"><span>⌕</span><input placeholder="Search assets, pages..." aria-label="Search platform"><kbd>⌘ K</kbd></div><div class="top-actions"><span class="demo-indicator"><i></i> Preview mode</span><button class="round-action" aria-label="Notifications">♧<i></i></button><button class="profile-action"><span class="profile-avatar">JD</span><span class="profile-text"><b>Jordan Davis</b><small>Personal account</small></span><span>⌄</span></button></div></header>
-<aside class="platform-sidebar"><div class="sidebar-label">WORKSPACE</div><button class="side-link active" data-page="overview"><span>◫</span> Overview</button><button class="side-link" data-page="markets"><span>⌁</span> Markets</button><button class="side-link" data-page="trade"><span>⇄</span> Trade</button><div class="sidebar-label sidebar-spaced">YOUR ACCOUNT</div><button class="side-link" data-page="wallet"><span>▣</span> Wallet</button><button class="side-link" data-page="history"><span>◷</span> Transaction history</button><button class="side-link" data-page="promotions"><span>✳</span> Promotions <span class="side-badge">1</span></button><button class="side-link" data-page="settings"><span>⚙</span> Settings</button><div class="sidebar-bottom"><span class="secure-mark">✓</span><div><b>Your account is protected</b><small>Security status · Good</small></div></div><button class="side-link" data-sign-out><span>↩</span> Sign out</button><a href="index.html" class="sidebar-logout">↩ &nbsp; Back to website</a></aside>
-<main class="platform-main"><div class="platform-content"><div class="preview-banner"><span>ⓘ</span><div><b>Frontend preview</b><span>Market data and some activity are illustrative. Deposits remain paused until independent Ethereum verification is deployed.</span></div><button class="banner-dismiss" aria-label="Dismiss">×</button></div><div id="pageContent"></div><footer class="platform-footer"><span>CryptoWise · Platform preview</span><span>Crypto assets are volatile. This interface is not investment advice.</span></footer></div></main><div class="mobile-shade"></div><div class="toast" role="status"></div>
-</body></html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#07171f" />
+    <title>CryptoWise Platform</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="platform.css" />
+
+    <script src="platform.js" defer></script>
+    <script src="api/config.js" defer></script>
+    <script src="api/client.js" defer></script>
+    <script type="module" src="api/firebase-auth.js"></script>
+  </head>
+
+  <body class="platform-body">
+    <header class="platform-header">
+      <button class="menu-toggle" aria-label="Toggle navigation">☰</button>
+
+      <a class="brand" href="index.html">
+        <span class="brand-mark">
+          <svg viewBox="0 0 40 34" fill="none">
+            <path
+              d="M15.8 5.4 6 16.7l8.8 10.1L34 5.5"
+              stroke="currentColor"
+              stroke-width="7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+            <path
+              d="m25.3 19.3 4.1 7.5 5.5-8"
+              stroke="currentColor"
+              stroke-width="6"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </span>
+        <span class="brand-name">Crypto<span>Wise</span></span>
+      </a>
+
+      <div class="top-search">
+        <span>⌕</span>
+        <input
+          placeholder="Search assets, pages..."
+          aria-label="Search platform"
+        />
+        <kbd>⌘ K</kbd>
+      </div>
+
+      <div class="top-actions">
+        <span class="demo-indicator"><i></i> Preview mode</span>
+        <button class="round-action" aria-label="Notifications">
+          ♧<i></i>
+        </button>
+        <button class="profile-action">
+          <span class="profile-avatar">CW</span>
+          <span class="profile-text">
+            <b>Customer</b>
+            <small data-profile-username>Creating username…</small>
+          </span>
+          <span>⌄</span>
+        </button>
+      </div>
+    </header>
+
+    <aside class="platform-sidebar">
+      <div class="sidebar-label">WORKSPACE</div>
+
+      <button class="side-link active" data-page="overview">
+        <span>◫</span> Overview
+      </button>
+      <button class="side-link" data-page="markets">
+        <span>⌁</span> Markets
+      </button>
+      <button class="side-link" data-page="trade">
+        <span>⇄</span> Trade
+      </button>
+
+      <div class="sidebar-label sidebar-spaced">YOUR ACCOUNT</div>
+
+      <button class="side-link" data-page="wallet">
+        <span>▣</span> Wallet
+      </button>
+      <button class="side-link" data-page="history">
+        <span>◷</span> Transaction history
+      </button>
+      <button class="side-link" data-page="promotions">
+        <span>✳</span> Promotions
+        <span class="side-badge">1</span>
+      </button>
+      <button class="side-link" data-page="settings">
+        <span>⚙</span> Settings
+      </button>
+
+      <div class="sidebar-bottom">
+        <span class="secure-mark">✓</span>
+        <div>
+          <b>Your account is protected</b>
+          <small>Security status · Good</small>
+        </div>
+      </div>
+
+      <button class="side-link" data-sign-out>
+        <span>↩</span> Sign out
+      </button>
+      <a href="index.html" class="sidebar-logout">
+        ↩ &nbsp; Back to website
+      </a>
+    </aside>
+
+    <main class="platform-main">
+      <div class="platform-content">
+        <div class="preview-banner">
+          <span>ⓘ</span>
+          <div>
+            <b>Frontend preview</b>
+            <span>
+              Market data and some activity are illustrative. Deposits remain
+              paused until independent Ethereum verification is deployed.
+            </span>
+          </div>
+          <button class="banner-dismiss" aria-label="Dismiss">×</button>
+        </div>
+
+        <div id="pageContent"></div>
+
+        <footer class="platform-footer">
+          <span>CryptoWise · Platform preview</span>
+          <span>
+            Crypto assets are volatile. This interface is not investment advice.
+          </span>
+        </footer>
+      </div>
+    </main>
+
+    <div class="mobile-shade"></div>
+    <div class="toast" role="status"></div>
+  </body>
+</html>

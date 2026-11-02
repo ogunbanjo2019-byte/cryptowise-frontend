@@ -96,16 +96,12 @@ function activityRows(data = transactions) {
 
 function renderChart(canvas) {
   if (!canvas) return;
-
-  const w = canvas.clientWidth;
-  const h = canvas.clientHeight;
-  const dpr = window.devicePixelRatio || 1;
-
+  const w = canvas.clientWidth,
+    h = canvas.clientHeight,
+    dpr = window.devicePixelRatio || 1;
   if (!w || !h) return;
-
   canvas.width = w * dpr;
   canvas.height = h * dpr;
-
   const c = canvas.getContext("2d");
   c.scale(dpr, dpr);
 
@@ -121,16 +117,15 @@ function renderChart(canvas) {
     27, 35, 32, 43, 38, 48, 41, 56, 50, 61, 57, 71, 63, 73, 68, 82, 78, 74, 89,
     81, 94, 87, 102, 97, 109, 101, 119, 111, 127, 118, 137,
   ];
-  const lo = 20;
-  const hi = 145;
+  const lo = 20,
+    hi = 145;
 
   c.beginPath();
   vals.forEach((v, i) => {
-    const x = (i / (vals.length - 1)) * w;
-    const y = h - 8 - ((v - lo) / (hi - lo)) * (h - 18);
+    const x = (i / (vals.length - 1)) * w,
+      y = h - 8 - ((v - lo) / (hi - lo)) * (h - 18);
     i ? c.lineTo(x, y) : c.moveTo(x, y);
   });
-
   c.lineTo(w, h);
   c.lineTo(0, h);
   c.closePath();
@@ -143,11 +138,10 @@ function renderChart(canvas) {
 
   c.beginPath();
   vals.forEach((v, i) => {
-    const x = (i / (vals.length - 1)) * w;
-    const y = h - 8 - ((v - lo) / (hi - lo)) * (h - 18);
+    const x = (i / (vals.length - 1)) * w,
+      y = h - 8 - ((v - lo) / (hi - lo)) * (h - 18);
     i ? c.lineTo(x, y) : c.moveTo(x, y);
   });
-
   c.strokeStyle = "#24d09b";
   c.lineWidth = 2;
   c.stroke();
@@ -170,8 +164,7 @@ function marketsPage() {
 }
 
 function tradePage() {
-  return `${heading("Trade", "Preview an order ticket. Orders are not submitted.", `<button class="btn btn-secondary" data-action="notify">Order history</button>`)}<div class="preview-banner"><span>ⓘ</span><div><b>Trading is not connected</b><span>Connect a licensed exchange or broker API and execution backend before accepting orders.</span></div></div><div class="overview-grid trade-grid"><section class="panel chart-panel"><div class="panel-title"><h2>ETH / USDT</h2><div class="chart-legend"><span></span> $3,245.67 &nbsp; +1.18%</div></div><canvas class="large-chart" id="tradeChart" aria-label="Illustrative Ethereum price chart"></canvas><div class="period-select"><button>15m</button><button>1H</button><button class="chosen">4H</button><button>1D</button><button>1W</button></div></section><section class="panel"><div class="tabs"><button class="active" data-tab="buy">Buy</button><button data-tab="sell">Sell</button></div><div class="form-field"><label>Order type</label><select><option>Market order</option><option>Limit order (preview)</option></select></div><div class="form-field" style="margin-top:12px"><label>Pay with</label><select><option>USDT · Available 5,120.00</option><option>ETH · Available 2.84</option></select></div><div class="form-field" style="margin-top:12px"><label>Amount</label><input type="number" placeholder="0.00" min="0"></div><div class="notice-card">Estimated price <strong>$3,245.67 / ETH</strong>  
-Estimated fee <strong>—</strong> · backend not connected</div><button class="btn btn-primary" style="width:100%" data-action="notify">Preview order</button><small class="metric-foot">No trade will be placed in preview mode.</small></section></div>`;
+  return `${heading("Trade", "Preview an order ticket. Orders are not submitted.", `<button class="btn btn-secondary" data-action="notify">Order history</button>`)}<div class="preview-banner"><span>ⓘ</span><div><b>Trading is not connected</b><span>Connect a licensed exchange or broker API and execution backend before accepting orders.</span></div></div><div class="overview-grid trade-grid"><section class="panel chart-panel"><div class="panel-title"><h2>ETH / USDT</h2><div class="chart-legend"><span></span> $3,245.67 &nbsp; +1.18%</div></div><canvas class="large-chart" id="tradeChart" aria-label="Illustrative Ethereum price chart"></canvas><div class="period-select"><button>15m</button><button>1H</button><button class="chosen">4H</button><button>1D</button><button>1W</button></div></section><section class="panel"><div class="tabs"><button class="active" data-tab="buy">Buy</button><button data-tab="sell">Sell</button></div><div class="form-field"><label>Order type</label><select><option>Market order</option><option>Limit order (preview)</option></select></div><div class="form-field" style="margin-top:12px"><label>Pay with</label><select><option>USDT · Available 5,120.00</option><option>ETH · Available 2.84</option></select></div><div class="form-field" style="margin-top:12px"><label>Amount</label><input type="number" placeholder="0.00" min="0"></div><div class="notice-card">Estimated price <strong>$3,245.67 / ETH</strong><br>Estimated fee <strong>—</strong> · backend not connected</div><button class="btn btn-primary" style="width:100%" data-action="notify">Preview order</button><small class="metric-foot">No trade will be placed in preview mode.</small></section></div>`;
 }
 
 function walletPage() {
@@ -183,13 +176,11 @@ function walletPage() {
     )
     .join(
       "",
-    )}</div><section class="panel" style="margin-top:14px"><div class="panel-title"><h2>Deposit availability</h2></div><div class="notice-card"><strong>ETH and USDT on Ethereum are not currently accepting deposits.</strong>  
-Do not send funds to the address shown in an exchange app or any address not displayed as an active CryptoWise instruction. Chain verification, confirmations, reorg recovery, and reconciliation must be operational before deposits open.</div><div class="panel-title" style="margin-top:19px"><h2>Recent wallet activity</h2><button data-page-link="history">Full history ↗</button></div><div class="table-wrap"><table class="activity-table"><thead><tr><th>ACTIVITY</th><th>AMOUNT</th><th>ASSET</th><th>STATUS</th><th>DATE</th></tr></thead><tbody>${activityRows(transactions.slice(0, 3))}</tbody></table></div></section>`;
+    )}</div><section class="panel" style="margin-top:14px"><div class="panel-title"><h2>Deposit availability</h2></div><div class="notice-card"><strong>ETH and USDT on Ethereum are not currently accepting deposits.</strong><br>Do not send funds to the address shown in an exchange app or any address not displayed as an active CryptoWise instruction. Chain verification, confirmations, reorg recovery, and reconciliation must be operational before deposits open.</div><div class="panel-title" style="margin-top:19px"><h2>Recent wallet activity</h2><button data-page-link="history">Full history ↗</button></div><div class="table-wrap"><table class="activity-table"><thead><tr><th>ACTIVITY</th><th>AMOUNT</th><th>ASSET</th><th>STATUS</th><th>DATE</th></tr></thead><tbody>${activityRows(transactions.slice(0, 3))}</tbody></table></div></section>`;
 }
 
 function depositPage() {
-  return `${heading("Crypto deposits", "View receiving instructions and track deposit requests. Do not send funds while this page says deposits are paused.")}<section class="panel"><div class="panel-title"><h2>Ethereum deposits · ETH and USDT</h2><span class="status pending" id="depositAvailability">Checking status</span></div><div class="notice-card" id="depositNetworkNote">Loading backend deposit status…</div><div class="form-field" style="margin-top:12px"><label for="depositAsset">Asset</label><select id="depositAsset"><option value="ETH">ETH · native Ethereum</option><option value="USDT">USDT · Ethereum ERC-20</option></select></div><div class="notice-card"><strong>Receiving address</strong>  
-<code id="depositAddress">No active receiving address</code><button type="button" class="btn btn-secondary" id="copyDepositAddress" style="margin-left:10px" hidden>Copy</button></div><div class="notice-card" id="depositAssetDetails">No verified deposit instructions are active. Never send assets to the address shown in another app unless CryptoWise presents it here as active.</div><form id="depositRequestForm" hidden><div class="form-field"><label for="depositTxHash">Transaction hash</label><input id="depositTxHash" name="txHash" type="text" inputmode="text" autocomplete="off" placeholder="0x…" pattern="0x[a-fA-F0-9]{64}" required></div><button class="btn btn-primary" type="submit" style="margin-top:10px">Submit deposit for tracking</button><p class="metric-foot">Submitting a hash is not proof of payment and does not itself credit a balance.</p></form></section><section class="panel" style="margin-top:14px"><div class="panel-title"><h2>Your deposit requests</h2></div><div id="depositRequestsList" class="notice-card">Sign in to load your deposit requests.</div></section>`;
+  return `${heading("Crypto deposits", "View receiving instructions and track deposit requests. Do not send funds while this page says deposits are paused.")}<section class="panel"><div class="panel-title"><h2>Ethereum deposits · ETH and USDT</h2><span class="status pending" id="depositAvailability">Checking status</span></div><div class="notice-card" id="depositNetworkNote">Loading backend deposit status…</div><div class="form-field" style="margin-top:12px"><label for="depositAsset">Asset</label><select id="depositAsset"><option value="ETH">ETH · native Ethereum</option><option value="USDT">USDT · Ethereum ERC-20</option></select></div><div class="notice-card"><strong>Receiving address</strong><br><code id="depositAddress">No active receiving address</code><button type="button" class="btn btn-secondary" id="copyDepositAddress" style="margin-left:10px" hidden>Copy</button></div><div class="notice-card" id="depositAssetDetails">No verified deposit instructions are active. Never send assets to the address shown in another app unless CryptoWise presents it here as active.</div><form id="depositRequestForm" hidden><div class="form-field"><label for="depositTxHash">Transaction hash</label><input id="depositTxHash" name="txHash" type="text" inputmode="text" autocomplete="off" placeholder="0x…" pattern="0x[a-fA-F0-9]{64}" required></div><button class="btn btn-primary" type="submit" style="margin-top:10px">Submit deposit for tracking</button><p class="metric-foot">Submitting a hash is not proof of payment and does not itself credit a balance.</p></form></section><section class="panel" style="margin-top:14px"><div class="panel-title"><h2>Your deposit requests</h2></div><div id="depositRequestsList" class="notice-card">Sign in to load your deposit requests.</div></section>`;
 }
 
 function historyPage() {
@@ -198,14 +189,11 @@ function historyPage() {
 }
 
 function promotionsPage(admin = false) {
-  return `${heading(admin ? "Promotion settings" : "Promotions", admin ? "Configure offer display and terms (preview only)." : "Offers and eligibility information.", admin ? '<button class="btn btn-primary" data-action="notify">＋ &nbsp; New promotion</button>' : "")}<section class="promo-card"><div><div class="eyebrow">WELCOME OFFER · TERMS APPLY</div><h2>Give your first deposit a brighter beginning.</h2><p>Eligible first deposits may qualify for up to a 3× promotional bonus. Offer eligibility, caps, holding periods, and withdrawal terms must be configured and legally reviewed before launch.</p><button class="btn btn-primary" data-action="notify">View offer details ↗</button></div><div class="promo-value">3×</div></section><div class="dashboard-lower"><section class="panel"><div class="panel-title"><h2>How it works</h2></div><div class="notice-card"><strong>1. Check eligibility</strong>  
-Confirm the user qualifies based on published terms.</div><div class="notice-card"><strong>2. Make a qualifying deposit</strong>  
-Deposit requirements must be verified by the connected backend.</div><div class="notice-card"><strong>3. Bonus is credited</strong>  
-Credit only after policy and compliance requirements are met.</div></section><section class="panel"><div class="panel-title"><h2>Offer terms</h2></div><p class="metric-foot" style="font-size:9px;line-height:1.8">This interface uses a placeholder promotion. Define exact eligibility, bonus cap, geographic restrictions, expiry, custody, withdrawal lock-up, consumer disclosures, and applicable legal approvals before publishing an offer.</p></section></div>`;
+  return `${heading(admin ? "Promotion settings" : "Promotions", admin ? "Configure offer display and terms (preview only)." : "Offers and eligibility information.", admin ? '<button class="btn btn-primary" data-action="notify">＋ &nbsp; New promotion</button>' : "")}<section class="promo-card"><div><div class="eyebrow">WELCOME OFFER · TERMS APPLY</div><h2>Give your first deposit a brighter beginning.</h2><p>Eligible first deposits may qualify for up to a 3× promotional bonus. Offer eligibility, caps, holding periods, and withdrawal terms must be configured and legally reviewed before launch.</p><button class="btn btn-primary" data-action="notify">View offer details ↗</button></div><div class="promo-value">3×</div></section><div class="dashboard-lower"><section class="panel"><div class="panel-title"><h2>How it works</h2></div><div class="notice-card"><strong>1. Check eligibility</strong><br>Confirm the user qualifies based on published terms.</div><div class="notice-card"><strong>2. Make a qualifying deposit</strong><br>Deposit requirements must be verified by the connected backend.</div><div class="notice-card"><strong>3. Bonus is credited</strong><br>Credit only after policy and compliance requirements are met.</div></section><section class="panel"><div class="panel-title"><h2>Offer terms</h2></div><p class="metric-foot" style="font-size:9px;line-height:1.8">This interface uses a placeholder promotion. Define exact eligibility, bonus cap, geographic restrictions, expiry, custody, withdrawal lock-up, consumer disclosures, and applicable legal approvals before publishing an offer.</p></section></div>`;
 }
 
 function settingsPage() {
-  return `${heading("Settings", "Manage your profile and interface preferences.")}<div class="settings-layout"><nav class="settings-nav"><button class="active">Profile</button><button>Security</button><button>Notifications</button><button>Preferences</button></nav><section class="panel"><div class="panel-title"><h2>Personal information</h2><span class="status">Preview</span></div><div class="form-grid"><div class="form-field"><label>First name</label><input data-profile-first value=""></div><div class="form-field"><label>Last name</label><input data-profile-last value=""></div><div class="form-field"><label>Email address</label><input data-profile-email type="email" value=""></div><div class="form-field"><label>Display currency</label><select><option>USD — US Dollar</option></select></div></div><div class="notice-card" style="margin-top:15px">Profile edits are not saved in preview mode. Authentication, password updates, multi-factor authentication, and account recovery require a secure identity backend.</div><button class="btn btn-primary" style="margin-top:10px" data-action="notify">Save changes</button></section></div>`;
+  return `${heading("Settings", "Manage your profile and interface preferences.")}<div class="settings-layout"><nav class="settings-nav"><button class="active">Profile</button><button>Security</button><button>Notifications</button><button>Preferences</button></nav><section class="panel"><div class="panel-title"><h2>Personal information</h2><span class="status">Preview</span></div><div class="form-grid"><div class="form-field"><label>First name</label><input data-profile-first value=""></div><div class="form-field"><label>Last name</label><input data-profile-last value=""></div><div class="form-field"><label>Email address</label><input data-profile-email type="email" value=""></div><div class="form-field"><label>Username</label><input data-profile-username-field readonly value=""></div><div class="form-field"><label>Display currency</label><select><option>USD — US Dollar</option></select></div></div><div class="notice-card" style="margin-top:15px">Profile edits are not saved in preview mode. Authentication, password updates, multi-factor authentication, and account recovery require a secure identity backend.</div><button class="btn btn-primary" style="margin-top:10px" data-action="notify">Save changes</button></section></div>`;
 }
 
 const views = {
@@ -232,24 +220,18 @@ function buildMarketTable() {
 
 function navigate(page) {
   if (!views[page]) return;
-
   currentPage = page;
-
   document
     .querySelectorAll(".side-link")
     .forEach((b) => b.classList.toggle("active", b.dataset.page === page));
-
   const content = document.getElementById("pageContent");
   content.innerHTML = views[page]();
-
   buildMarketTable();
   renderChart(document.getElementById("portfolioChart"));
   renderChart(document.getElementById("tradeChart"));
-
   document.querySelector(".platform-sidebar").classList.remove("open");
   document.querySelector(".mobile-shade").classList.remove("visible");
   window.scrollTo({ top: 0, behavior: "smooth" });
-
   if (liveProfile) renderConnectedAccount();
   if (currentPage === "deposit") loadDepositPage();
 }
@@ -259,29 +241,23 @@ function navigate(page) {
 // ==========================================
 
 let toastTimer;
-
 function toast(message) {
   const box = document.querySelector(".toast");
   if (!box) return;
-
   box.textContent = message;
   box.classList.add("visible");
-
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => box.classList.remove("visible"), 3200);
 }
 
 document.addEventListener("click", (e) => {
   const nav = e.target.closest("[data-page], [data-page-link]");
-
   if (nav) {
     e.preventDefault();
     navigate(nav.dataset.page || nav.dataset.pageLink);
     return;
   }
-
   const action = e.target.closest("[data-action]");
-
   if (action) {
     if (action.dataset.action === "download") {
       // Download the authenticated account export generated by the backend.
@@ -292,17 +268,14 @@ document.addEventListener("click", (e) => {
               "Account export is unavailable. Update the API client first.",
             );
           }
-
           const blob = await window.CryptoWiseAPI.exportAccount();
           const url = URL.createObjectURL(blob);
           const link = document.createElement("a");
-
           link.href = url;
           link.download = "cryptowise-account-export.csv";
           document.body.appendChild(link);
           link.click();
           link.remove();
-
           setTimeout(() => URL.revokeObjectURL(url), 1000);
           toast("Your account export was downloaded.");
         } catch (error) {
@@ -312,33 +285,25 @@ document.addEventListener("click", (e) => {
     } else {
       toast("Preview only — connect your backend to enable this action.");
     }
-
     return;
   }
-
   const tab = e.target.closest("[data-tab]");
-
   if (tab) {
     tab.parentElement
       .querySelectorAll("button")
       .forEach((b) => b.classList.toggle("active", b === tab));
     return;
   }
-
   const filter = e.target.closest("[data-filter]");
-
   if (filter) {
     filter.parentElement
       .querySelectorAll("button")
       .forEach((b) => b.classList.toggle("active", b === filter));
     return;
   }
-
   const banner = e.target.closest(".banner-dismiss");
   if (banner) banner.closest(".preview-banner").remove();
-
   const period = e.target.closest(".period-select button");
-
   if (period) {
     period.parentElement
       .querySelectorAll("button")
@@ -395,7 +360,6 @@ function atomicDisplay(raw, decimals) {
     .toString()
     .padStart(decimals, "0")
     .replace(/0+$/, "");
-
   return `${whole}${fraction ? "." + fraction : ""}`;
 }
 
@@ -409,10 +373,8 @@ function getTimeGreeting(name, date = new Date()) {
         : hour >= 18 && hour < 22
           ? "Good evening"
           : "Good night";
-
   return `${partOfDay}, ${name}`;
 }
-
 function renderConnectedAccount() {
   const email =
     liveProfile?.email || window.CryptoWiseAuth?.currentUser?.()?.email || "";
@@ -423,19 +385,22 @@ function renderConnectedAccount() {
     firebaseName ||
     email.split("@")[0] ||
     "Customer";
-
+  const username = liveProfile?.username || "";
   const profileName = document.querySelector(".profile-text b");
   if (profileName) profileName.textContent = displayName;
-
+  const usernameLabel = document.querySelector(".profile-text [data-profile-username]");
+  if (usernameLabel) usernameLabel.textContent = username ? `@${username}` : "Creating username…";
+  const usernameField = document.querySelector("[data-profile-username-field]");
+  if (usernameField) usernameField.value = username ? `@${username}` : "";
+  const avatar = document.querySelector(".profile-avatar");
+  if (avatar) avatar.textContent = displayName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "CW";
   const greeting = document.querySelector("#pageContent .page-heading h1");
   if (currentPage === "overview" && greeting)
     greeting.textContent = getTimeGreeting(displayName);
-
   const nameParts = displayName.trim().split(/\s+/);
   const firstName = document.querySelector("[data-profile-first]");
   const lastName = document.querySelector("[data-profile-last]");
   const emailField = document.querySelector("[data-profile-email]");
-
   if (firstName) firstName.value = nameParts.shift() || "";
   if (lastName) lastName.value = nameParts.join(" ");
   if (emailField) emailField.value = email;
@@ -444,7 +409,6 @@ function renderConnectedAccount() {
     "#pageContent .metric-card .metric-value",
   );
   metricValues.forEach((x) => (x.textContent = "—"));
-
   document
     .querySelectorAll("#pageContent .metric-card .metric-foot")
     .forEach(
@@ -456,18 +420,15 @@ function renderConnectedAccount() {
   const assetPanel = document.querySelector(
     ".overview-grid .panel:nth-child(2) .asset-list",
   );
-
   if (assetPanel) {
     assetPanel.querySelectorAll(".asset-line").forEach((row) => {
       const symbol = row
         .querySelector(".asset-name small")
         ?.textContent?.trim();
-
       if (!["ETH", "USDT"].includes(symbol)) {
         row.remove();
         return;
       }
-
       row.querySelector(".asset-holding b").textContent =
         `${atomicDisplay(liveWallet.availableAtomic?.[symbol], symbol === "ETH" ? 18 : 6)} ${symbol}`;
       row.querySelector(".asset-holding small").textContent =
@@ -479,9 +440,7 @@ function renderConnectedAccount() {
   document.querySelectorAll(".wallet-grid .panel").forEach((panel) => {
     const label = panel.querySelector(".wallet-asset small")?.textContent || "";
     const asset = ["ETH", "USDT"].find((x) => label.includes(x));
-
     if (!asset) return;
-
     panel.querySelector(".wallet-balance").textContent =
       `${atomicDisplay(liveWallet.availableAtomic?.[asset], asset === "ETH" ? 18 : 6)} ${asset}`;
     panel.querySelector(".wallet-equivalent").textContent =
@@ -489,23 +448,19 @@ function renderConnectedAccount() {
   });
 
   const entries = liveWallet.transactions || [];
-
   document
     .querySelectorAll(".activity-table tbody,.admin-table tbody")
     .forEach((body) => {
       body.replaceChildren();
-
       if (!entries.length) {
-        const row = document.createElement("tr");
-        const cell = document.createElement("td");
-
+        const row = document.createElement("tr"),
+          cell = document.createElement("td");
         cell.colSpan = 5;
         cell.textContent = "No account transactions yet.";
         row.append(cell);
         body.append(row);
         return;
       }
-
       entries.forEach((entry) => {
         const row = document.createElement("tr");
         const cells = [
@@ -517,13 +472,11 @@ function renderConnectedAccount() {
             ? new Date(entry.createdAt.seconds * 1000).toLocaleString()
             : "—",
         ];
-
         cells.forEach((value) => {
           const cell = document.createElement("td");
           cell.textContent = value;
           row.append(cell);
         });
-
         body.append(row);
       });
     });
@@ -531,7 +484,6 @@ function renderConnectedAccount() {
 
 async function connectCustomerApi() {
   const badge = document.querySelector(".demo-indicator");
-
   try {
     const health = await window.CryptoWiseAPI.health();
     if (badge)
@@ -543,35 +495,28 @@ async function connectCustomerApi() {
 
   const connect = async (auth) => {
     if (!auth?.configured || !auth.isSignedIn()) return;
-
     const firebaseUser = auth.currentUser?.();
-
     // Render the user's identity and local-time greeting immediately after Firebase login,
     // even if the backend API is still waking up or temporarily unavailable.
     liveProfile = {
       displayName: firebaseUser?.displayName || null,
       email: firebaseUser?.email || null,
     };
-
     renderConnectedAccount();
-
     try {
       window.CryptoWiseAPI.setTokenProvider(auth.getIdToken);
-
       const [profile, wallet] = await Promise.all([
         window.CryptoWiseAPI.me(),
         window.CryptoWiseAPI.wallet(),
       ]);
-
       liveProfile = {
         ...profile,
         displayName: firebaseUser?.displayName || profile.displayName || null,
         email: firebaseUser?.email || profile.email || null,
+        username: profile.username || null,
       };
       liveWallet = wallet;
-
       renderConnectedAccount();
-
       if (currentPage === "deposit") loadDepositPage();
     } catch (error) {
       if (badge) badge.textContent = "API error · preview";
@@ -593,7 +538,6 @@ connectCustomerApi();
 document.addEventListener("click", (e) => {
   if (e.target.closest("[data-sign-out]")) {
     e.preventDefault();
-
     Promise.resolve(window.CryptoWiseAuthReady)
       .then((auth) => auth?.signOut())
       .finally(() => window.location.replace("index.html"));
@@ -608,11 +552,9 @@ function depositDate(value) {
   if (!value) return "—";
   if (typeof value.toDate === "function")
     return value.toDate().toLocaleString();
-
   const seconds = value.seconds ?? value._seconds;
   if (typeof seconds === "number")
     return new Date(seconds * 1000).toLocaleString();
-
   const date = new Date(value);
   return Number.isNaN(date.valueOf()) ? "—" : date.toLocaleString();
 }
@@ -641,10 +583,8 @@ function updateDepositAssetDisplay() {
   details.textContent = enabled
     ? `${asset.asset} · ${liveDepositInstructions.network} · ${asset.tokenContract ? "Token contract: " + asset.tokenContract : "Native asset"}`
     : "No verified deposit instructions are active. Do not send assets.";
-
   form.hidden = !enabled;
   if (copy) copy.hidden = !enabled;
-
   if (badge) {
     badge.textContent = enabled ? "Available" : "Paused";
     badge.className = `status ${enabled ? "" : "pending"}`;
@@ -654,7 +594,6 @@ function updateDepositAssetDisplay() {
 function renderDepositRequests(requests) {
   const host = document.getElementById("depositRequestsList");
   if (!host) return;
-
   host.replaceChildren();
 
   if (!requests?.length) {
@@ -664,24 +603,20 @@ function renderDepositRequests(requests) {
 
   const wrap = document.createElement("div");
   wrap.className = "table-wrap";
-
   const table = document.createElement("table");
   table.className = "activity-table";
 
-  const thead = document.createElement("thead");
-  const head = document.createElement("tr");
-
+  const thead = document.createElement("thead"),
+    head = document.createElement("tr");
   ["ASSET", "TRANSACTION HASH", "STATUS", "UPDATED"].forEach((label) => {
     const th = document.createElement("th");
     th.textContent = label;
     head.append(th);
   });
-
   thead.append(head);
   table.append(thead);
 
   const body = document.createElement("tbody");
-
   requests.forEach((request) => {
     const row = document.createElement("tr");
     const values = [
@@ -690,7 +625,6 @@ function renderDepositRequests(requests) {
       request.status || "—",
       depositDate(request.updatedAt),
     ];
-
     values.forEach((value, index) => {
       const cell = document.createElement("td");
       cell.textContent =
@@ -699,7 +633,6 @@ function renderDepositRequests(requests) {
           : String(value);
       row.append(cell);
     });
-
     body.append(row);
   });
 
@@ -711,28 +644,23 @@ function renderDepositRequests(requests) {
 async function loadDepositPage() {
   const note = document.getElementById("depositNetworkNote");
   const list = document.getElementById("depositRequestsList");
-
   if (!note || !window.CryptoWiseAPI) return;
-
   if (!liveProfile) {
     note.textContent = "Sign in to load deposit availability.";
     if (list) list.textContent = "Sign in to load your deposit requests.";
     return;
   }
-
   try {
     const [instructions, history] = await Promise.all([
       window.CryptoWiseAPI.depositInstructions(),
       window.CryptoWiseAPI.depositRequests(),
     ]);
-
     liveDepositInstructions = instructions;
     updateDepositAssetDisplay();
     renderDepositRequests(history.requests || []);
   } catch (error) {
     liveDepositInstructions = null;
     updateDepositAssetDisplay();
-
     note.textContent = `Could not load verified deposit instructions: ${error.message}.`;
     if (list)
       list.textContent = "Deposit request history is temporarily unavailable.";
@@ -745,28 +673,21 @@ document.addEventListener("change", (event) => {
 
 document.addEventListener("submit", async (event) => {
   if (!event.target.matches("#depositRequestForm")) return;
-
   event.preventDefault();
-
-  const form = event.target;
-  const button = form.querySelector('button[type="submit"]');
-
+  const form = event.target,
+    button = form.querySelector("button[type=submit]");
   if (!liveDepositInstructions?.enabled) {
     toast("Deposits are paused; no request was submitted.");
     return;
   }
-
   button.disabled = true;
-
   try {
     const txHash = document.getElementById("depositTxHash").value.trim();
-
     const result = await window.CryptoWiseAPI.createDepositRequest({
       asset: document.getElementById("depositAsset").value,
       txHash,
       network: "ethereum",
     });
-
     toast(result.message || "Deposit request submitted for tracking.");
     form.reset();
     await loadDepositPage();
@@ -780,10 +701,8 @@ document.addEventListener("submit", async (event) => {
 document.addEventListener("click", async (event) => {
   const button = event.target.closest("#copyDepositAddress");
   if (!button) return;
-
   const value = document.getElementById("depositAddress")?.textContent || "";
   if (!value || value === "No active receiving address") return;
-
   try {
     await navigator.clipboard.writeText(value);
     toast("Receiving address copied. Verify it carefully before sending.");
