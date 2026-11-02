@@ -1,6 +1,8 @@
-/* Set this to the backend origin only, without /v1. Replace with the Render URL after deployment. */
+'use strict';
+
+/* Set this to the backend origin only, without /v1. Pointing to your live Render backend URL. */
 window.CW_API_CONFIG = Object.freeze({
-  baseUrl: 'http://localhost:10000',
+  baseUrl: 'https://cryptowise-backend.onrender.com',
   requestTimeoutMs: 12000
 });
 
@@ -15,8 +17,15 @@ window.CW_FIREBASE_CONFIG = Object.freeze({
   messagingSenderId: 'REPLACE_WITH_SENDER_ID'
 });
 
-window.CryptoWiseWaitForAuth = function(){
-  if(window.CryptoWiseAuth) return Promise.resolve(window.CryptoWiseAuth);
-  if(window.CryptoWiseAuthReady) return window.CryptoWiseAuthReady;
-  return new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error('Firebase authentication module did not load. Check your connection.')),15000);window.addEventListener('cryptowise-auth-ready',()=>{clearTimeout(timer);resolve(window.CryptoWiseAuth)}, {once:true})});
+window.CryptoWiseWaitForAuth = function() {
+  if (window.CryptoWiseAuth) return Promise.resolve(window.CryptoWiseAuth);
+  if (window.CryptoWiseAuthReady) return window.CryptoWiseAuthReady;
+  
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error('Firebase authentication module did not load. Check your connection.')), 15000);
+    window.addEventListener('cryptowise-auth-ready', () => {
+      clearTimeout(timer);
+      resolve(window.CryptoWiseAuth);
+    }, { once: true });
+  });
 };
