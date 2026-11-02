@@ -193,7 +193,7 @@ function promotionsPage(admin = false) {
 }
 
 function settingsPage() {
-  return `${heading("Settings", "Manage your profile and interface preferences.")}<div class="settings-layout"><nav class="settings-nav"><button class="active">Profile</button><button>Security</button><button>Notifications</button><button>Preferences</button></nav><section class="panel"><div class="panel-title"><h2>Personal information</h2><span class="status">Preview</span></div><div class="form-grid"><div class="form-field"><label>First name</label><input data-profile-first value=""></div><div class="form-field"><label>Last name</label><input data-profile-last value=""></div><div class="form-field"><label>Email address</label><input data-profile-email type="email" value=""></div><div class="form-field"><label>Username</label><input data-profile-username-field readonly value=""></div><div class="form-field"><label>Display currency</label><select><option>USD — US Dollar</option></select></div></div><div class="notice-card" style="margin-top:15px">Profile edits are not saved in preview mode. Authentication, password updates, multi-factor authentication, and account recovery require a secure identity backend.</div><button class="btn btn-primary" style="margin-top:10px" data-action="notify">Save changes</button></section></div>`;
+  return `${heading("Settings", "Manage your profile and interface preferences.")}<div class="settings-layout"><nav class="settings-nav"><button class="active">Profile</button><button>Security</button><button>Notifications</button><button>Preferences</button></nav><section class="panel"><div class="panel-title"><h2>Personal information</h2><span class="status">Preview</span></div><div class="form-grid"><div class="form-field"><label>First name</label><input data-profile-first value=""></div><div class="form-field"><label>Last name</label><input data-profile-last value=""></div><div class="form-field"><label>Email address</label><input data-profile-email type="email" value=""></div><div class="form-field"><label>Username</label><input data-profile-username-field readonly value=""></div><div class="form-field"><label>Customer ID</label><input data-profile-customer-number readonly value=""></div><div class="form-field"><label>Display currency</label><select><option>USD — US Dollar</option></select></div></div><div class="notice-card" style="margin-top:15px">Profile edits are not saved in preview mode. Authentication, password updates, multi-factor authentication, and account recovery require a secure identity backend.</div><button class="btn btn-primary" style="margin-top:10px" data-action="notify">Save changes</button></section></div>`;
 }
 
 const views = {
@@ -388,12 +388,30 @@ function renderConnectedAccount() {
   const username = liveProfile?.username || "";
   const profileName = document.querySelector(".profile-text b");
   if (profileName) profileName.textContent = displayName;
-  const usernameLabel = document.querySelector(".profile-text [data-profile-username]");
-  if (usernameLabel) usernameLabel.textContent = username ? `@${username}` : "Creating username…";
+  const usernameLabel = document.querySelector(
+    ".profile-text [data-profile-username]",
+  );
+  if (usernameLabel)
+    usernameLabel.textContent = username
+      ? `@${username}`
+      : "Creating username…";
   const usernameField = document.querySelector("[data-profile-username-field]");
   if (usernameField) usernameField.value = username ? `@${username}` : "";
+  const customerNumberField = document.querySelector(
+    "[data-profile-customer-number]",
+  );
+  if (customerNumberField)
+    customerNumberField.value = liveProfile?.customerNumber || "";
   const avatar = document.querySelector(".profile-avatar");
-  if (avatar) avatar.textContent = displayName.split(/\s+/).filter(Boolean).slice(0, 2).map((part) => part[0]).join("").toUpperCase() || "CW";
+  if (avatar)
+    avatar.textContent =
+      displayName
+        .split(/\s+/)
+        .filter(Boolean)
+        .slice(0, 2)
+        .map((part) => part[0])
+        .join("")
+        .toUpperCase() || "CW";
   const greeting = document.querySelector("#pageContent .page-heading h1");
   if (currentPage === "overview" && greeting)
     greeting.textContent = getTimeGreeting(displayName);
@@ -514,6 +532,7 @@ async function connectCustomerApi() {
         displayName: firebaseUser?.displayName || profile.displayName || null,
         email: firebaseUser?.email || profile.email || null,
         username: profile.username || null,
+        customerNumber: profile.customerNumber || null,
       };
       liveWallet = wallet;
       renderConnectedAccount();
