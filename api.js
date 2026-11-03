@@ -1,42 +1,64 @@
-'use strict';
+(() => {
+  "use strict";
 
-// Configure your backend URL here:
-// Use 'http://localhost:10000' for local testing, or your live Render URL for production.
-const API_BASE_URL = 'https://your-cryptowise-backend.onrender.com';
+  const config = window.CW_API_CONFIG || {};
+  const baseUrl = String(config.baseUrl || "").replace(/\/+$/, "");
+  const timeoutMs = Number(config.requestTimeoutMs) > 0
+    ? Number(config.requestTimeoutMs)
+    : 12000;
 
-window.CryptoWiseAPI = {
-  async checkHealth() {
-    try {
-      const response = await fetch(`${API_BASE_URL}/health`);
-      return await response.json();
-    } catch (error) {
-      console.error('API is offline:', error);
-      return { status: 'offline' };
+  async function checkHealth() {
+    if (!baseUrl) {
+      throw new Error("Backend URL is missing. Set CW_API_CONFIG.baseUrl in js/config.js.");
     }
-  },
 
-  async preferences() {
-    const response = await fetch(`${API_BASE_URL}/v1/preferences`, {
-      headers: { 'Authorization': `Bearer ${window.CryptoWiseAuth?.getToken?.() || ''}` }
-    });
-    return await response.json();
-  },
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      let response;
+      try {
+        response = await fetch(`${baseUrl}/health`, {
+          method: "GET",
+          headers: { Accept: "application/json" },
+          credentials: "omit",
+          cache: "no-store",
+          signal: controller.signal,
+        });
+      } catch (error) {
+        if (error?.name === "AbortError") {
+          throw new Error("Backend health check timed out. Check that the API service is online.");
+        }
+        throw new Error("Cannot reach the backend. Check the backend URL and CORS configuration.");
+      }
 
-  async markNotificationRead(id) {
-    const response = await fetch(`${API_BASE_URL}/v1/notifications/${id}/read`, {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer ${window.CryptoWiseAuth?.getToken?.() || ''}` }
-    });
-    return await response.json();
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(result.error || `Backend health check failed (${response.status}).`);
+      }
+      return result;
+    } finally {
+      window.clearTimeout(timer);
+    }
   }
-};
 
-// Automatically verify backend connection on load and remove preview badge if online
-window.addEventListener('DOMContentLoaded', async () => {
-  const health = await window.CryptoWiseAPI.checkHealth();
-  if (health.status === 'ok') {
-    console.log('Connected to live backend:', health);
-    // Hide the preview warning banners across the UI
-    document.querySelectorAll('.preview-banner, .api-offline-badge').forEach(el => el.remove());
+  // The shared client is frozen; copy its methods before adding this compatibility method.
+  const api = { ...(window.CryptoWiseAPI || {}) };
+  api.checkHealth = checkHealth;
+  window.CryptoWiseAPI = Object.freeze(api);
+
+  function runHealthCheck() {
+    window.CryptoWiseAPI.checkHealth()
+      .then((health) => {
+        window.dispatchEvent(new CustomEvent("cryptowise-api-health", { detail: health }));
+      })
+      .catch((error) => {
+        console.warn("CryptoWise backend health check failed:", error.message);
+      });
   }
-});
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", runHealthCheck, { once: true });
+  } else {
+    runHealthCheck();
+  }
+})();
