@@ -11,7 +11,7 @@
     tokenProvider = provider;
   }
 
-  async function request(path, { method = "GET", body, auth = true } = {}) {
+  async function request(path, { method = "GET", body, auth = true, idempotencyKey } = {}) {
     const baseUrl = String(config.baseUrl || "").replace(/\/$/, "");
     if (!baseUrl) throw new Error("The backend URL is not configured in js/config.js.");
 
@@ -33,6 +33,7 @@
       }
 
       if (body !== undefined) headers["Content-Type"] = "application/json";
+      if (idempotencyKey) headers["Idempotency-Key"] = idempotencyKey;
 
       let response;
       try {
@@ -90,6 +91,15 @@
     adminWithdrawals: (status) =>
       request(`/v1/admin/withdrawals?status=${encodeURIComponent(status || "pending_review")}`),
     auditLogs: () => request("/v1/admin/audit-logs"),
+    tradingStatus: () => request("/v1/trading/status"),
+    trade: (body, idempotencyKey) => request("/v1/trade", { method: "POST", body, idempotencyKey }),
+    exportAccount: async () => {
+      const token = await tokenProvider?.();
+      if (!token) throw new Error("Please sign in first.");
+      const response = await fetch(`${String(config.baseUrl || "").replace(/\/$/, "")}/v1/account-export`, { headers: { Authorization: `Bearer ${token}`, Accept: "text/csv" }, cache: "no-store" });
+      if (!response.ok) { const data = await response.json().catch(() => ({})); throw new Error(data.error || `Export failed (${response.status}).`); }
+      return response.blob();
+    },
   };
 
   window.CryptoWiseAPI = Object.freeze(api);

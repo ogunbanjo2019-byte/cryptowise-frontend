@@ -147,12 +147,25 @@ function renderChart(canvas) {
   c.stroke();
 }
 
-// ==========================================
-// 3. PAGE TEMPLATES & VIEWS
-// ==========================================
-
+function renderTradeCandles(canvas) {
+  if (!canvas) return;
+  const w = canvas.clientWidth, h = canvas.clientHeight, dpr = window.devicePixelRatio || 1;
+  if (!w || !h) return;
+  canvas.width = w * dpr; canvas.height = h * dpr;
+  const c = canvas.getContext("2d"); c.scale(dpr, dpr); c.clearRect(0, 0, w, h);
+  c.fillStyle = "#07171f"; c.fillRect(0, 0, w, h);
+  c.strokeStyle = "rgba(197,224,218,.10)"; c.lineWidth = 1;
+  for (let i = 0; i <= 5; i++) { const y = 15 + i * ((h - 30) / 5); c.beginPath(); c.moveTo(0, y); c.lineTo(w, y); c.stroke(); }
+  for (let i = 0; i <= 7; i++) { const x = i * (w / 7); c.beginPath(); c.moveTo(x, 0); c.lineTo(x, h); c.stroke(); }
+  const closes = [286,291,289,295,301,298,305,312,309,316,311,319,323,320,327,324,331,337,334,341,338,344,339,346,351,348,355,352,358,354,361,357,365,362,369,366,372,368];
+  const min = 280, max = 380, plotH = h - 30, y = (v) => 15 + (max-v)/(max-min)*plotH, step = w / closes.length;
+  c.font = "9px DM Sans"; c.fillStyle = "#769295"; c.textAlign = "right";
+  [380,360,340,320,300,280].forEach((v) => c.fillText(String(v), w-5, y(v)+3));
+  closes.forEach((close, i) => { const open = i ? closes[i-1] : close-3; const high = Math.max(open,close)+[5,8,4,7][i%4]; const low = Math.min(open,close)-[4,6,3][i%3]; const x = i*step+step/2; const up = close >= open; const color = up ? "#18c69a" : "#ee6675"; c.strokeStyle=color; c.fillStyle=color; c.lineWidth=1.2; c.beginPath(); c.moveTo(x,y(high)); c.lineTo(x,y(low)); c.stroke(); const top=y(Math.max(open,close)), bottom=y(Math.min(open,close)); c.fillRect(x-step*.29, top, step*.58, Math.max(2,bottom-top)); });
+  const last = closes[closes.length-1]; c.setLineDash([4,4]); c.strokeStyle="#e5b34e"; c.beginPath(); c.moveTo(0,y(last)); c.lineTo(w,y(last)); c.stroke(); c.setLineDash([]); c.fillStyle="#e5b34e"; c.fillRect(w-52,y(last)-9,52,18); c.fillStyle="#07171f"; c.textAlign="center"; c.fillText(last.toFixed(2),w-26,y(last)+3);
+}
 function dashboard() {
-  return `${heading("Welcome to CryptoWise", "Here’s what’s happening with your portfolio today.", `<button class="btn btn-secondary" data-action="download">↓ &nbsp; Export</button><button class="btn btn-primary" data-page-link="wallet">＋ &nbsp; Add funds</button>`)}<div class="metric-grid">${metric("TOTAL BALANCE", "$24,680.50", "<em>↗ 8.24%</em> this month", "◉")}${metric("TODAY’S CHANGE", "+$384.21", "<em>↗ 1.58%</em> today", "↗")}${metric("ASSETS HELD", "4", "Across 3 asset types", "▣")}</div><div class="overview-grid"><section class="panel chart-panel"><div class="panel-title"><div><h2>Portfolio performance</h2><div class="chart-legend"><span></span> Total value</div></div><div class="period-select"><button>1D</button><button>1W</button><button class="chosen">1M</button><button>1Y</button><button>ALL</button></div></div><canvas class="large-chart" id="portfolioChart" aria-label="Portfolio performance chart"></canvas></section><section class="panel"><div class="panel-title"><h2>Your assets</h2><button data-page-link="wallet">View wallet ↗</button></div>${assetList()}</section></div><div class="dashboard-lower"><section class="panel"><div class="panel-title"><h2>Recent activity</h2><button data-page-link="history">View history ↗</button></div><div class="table-wrap"><table class="activity-table"><thead><tr><th>ACTIVITY</th><th>AMOUNT</th><th>ASSET</th><th>STATUS</th><th>DATE</th></tr></thead><tbody>${activityRows(transactions.slice(0, 4))}</tbody></table></div></section><section class="panel"><div class="panel-title"><h2>Market snapshot</h2><button data-page-link="markets">All markets ↗</button></div>${marketRows(assets.slice(0, 3))}</section></div><div class="deposit-callout"><div><h3>Your first deposit comes with a bonus</h3><p>Eligible deposits may qualify for our welcome promotion. Terms apply.</p></div><button class="btn btn-primary" data-page-link="promotions">Explore bonus ↗</button></div>`;
+  return `${heading("My accounts", "Manage your real and demo trading accounts.", `<button class="btn btn-primary" data-page-link="trade">Trade now ↗</button>`)}<section class="account-shell"><div class="account-alert"><strong>Secure your funds</strong><span>Use strong authentication and keep withdrawals protected.</span><b>✓</b></div><div class="account-tabs"><button class="active" type="button">Real</button><button type="button">Demo</button><span>＋ Open account</span></div><div class="account-toolbar"><span>☷ &nbsp; Newest</span><span>⌄</span></div><article class="account-card"><div class="account-card-top"><span><i></i> Real &nbsp; <b>CryptoWise</b> &nbsp; Standard</span><span>⌄</span></div><small class="account-number"># CW-000001 · Standard account</small><strong class="account-balance">$0.00<em> USD</em></strong><div class="account-actions"><button data-page-link="deposit">＋<small>Deposit</small></button><button data-page-link="trade">⇄<small>Trade</small></button><button data-page-link="wallet">•••<small>More</small></button></div></article><article class="account-card demo-account"><div class="account-card-top"><span><i></i> Demo &nbsp; <b>CryptoWise</b> &nbsp; Practice</span><span>⌄</span></div><small class="account-number"># DEMO-000001 · Virtual account</small><strong class="account-balance">$10,000.00<em> USD</em></strong><div class="account-actions"><button data-page-link="trade">⇄<small>Trade</small></button><button data-page-link="wallet">▣<small>Wallet</small></button><button data-page-link="history">•••<small>More</small></button></div></article></section><div class="metric-grid">${metric("TOTAL BALANCE", "$24,680.50", "<em>↗ 8.24%</em> this month", "◉")}${metric("TODAY’S CHANGE", "+$384.21", "<em>↗ 1.58%</em> today", "↗")}${metric("ASSETS HELD", "4", "Across 3 asset types", "▣")}</div><div class="overview-grid"><section class="panel chart-panel"><div class="panel-title"><div><h2>Portfolio performance</h2><div class="chart-legend"><span></span> Total value</div></div><div class="period-select"><button>1D</button><button>1W</button><button class="chosen">1M</button><button>1Y</button><button>ALL</button></div></div><canvas class="large-chart" id="portfolioChart" aria-label="Portfolio performance chart"></canvas></section><section class="panel"><div class="panel-title"><h2>Your assets</h2><button data-page-link="wallet">View wallet ↗</button></div>${assetList()}</section></div><div class="dashboard-lower"><section class="panel"><div class="panel-title"><h2>Recent activity</h2><button data-page-link="history">View history ↗</button></div><div class="table-wrap"><table class="activity-table"><thead><tr><th>ACTIVITY</th><th>AMOUNT</th><th>ASSET</th><th>STATUS</th><th>DATE</th></tr></thead><tbody>${activityRows(transactions.slice(0, 4))}</tbody></table></div></section><section class="panel"><div class="panel-title"><h2>Market snapshot</h2><button data-page-link="markets">All markets ↗</button></div>${marketRows(assets.slice(0, 3))}</section></div><div class="deposit-callout"><div><h3>Your first deposit comes with a bonus</h3><p>Eligible deposits may qualify for our welcome promotion. Terms apply.</p></div><button class="btn btn-primary" data-page-link="promotions">Explore bonus ↗</button></div>`;
 }
 
 function marketRows(list = assets) {
@@ -164,9 +177,8 @@ function marketsPage() {
 }
 
 function tradePage() {
-  return `${heading("Trade", "Preview an order ticket. Orders are not submitted.", `<button class="btn btn-secondary" data-action="notify">Order history</button>`)}<div class="preview-banner"><span>ⓘ</span><div><b>Trading is not connected</b><span>Connect a licensed exchange or broker API and execution backend before accepting orders.</span></div></div><div class="overview-grid trade-grid"><section class="panel chart-panel"><div class="panel-title"><h2>ETH / USDT</h2><div class="chart-legend"><span></span> $3,245.67 &nbsp; +1.18%</div></div><canvas class="large-chart" id="tradeChart" aria-label="Illustrative Ethereum price chart"></canvas><div class="period-select"><button>15m</button><button>1H</button><button class="chosen">4H</button><button>1D</button><button>1W</button></div></section><section class="panel"><div class="tabs"><button class="active" data-tab="buy">Buy</button><button data-tab="sell">Sell</button></div><div class="form-field"><label>Order type</label><select><option>Market order</option><option>Limit order (preview)</option></select></div><div class="form-field" style="margin-top:12px"><label>Pay with</label><select><option>USDT · Available 5,120.00</option><option>ETH · Available 2.84</option></select></div><div class="form-field" style="margin-top:12px"><label>Amount</label><input type="number" placeholder="0.00" min="0"></div><div class="notice-card">Estimated price <strong>$3,245.67 / ETH</strong><br>Estimated fee <strong>—</strong> · backend not connected</div><button class="btn btn-primary" style="width:100%" data-action="notify">Preview order</button><small class="metric-foot">No trade will be placed in preview mode.</small></section></div>`;
+  return `${heading("Trade", "Markets move fast. Keep your plan clear.", `<span class="status">Demo mode</span>`)}<div class="trading-workspace"><div class="trade-topbar"><button class="symbol-button">⌘ &nbsp; ETH/USDT <small>Ethereum / Tether</small></button><button>＋</button><span class="trade-price">3,245.67 <em>+1.18%</em></span><button class="icon-tool">⌁</button><button class="icon-tool">↗</button></div><div class="trade-timebar"><button class="active">15m</button><button>1H</button><button>4H</button><button>1D</button><button>1W</button><span></span><button>Indicators⌄</button><button>Alert</button></div><div class="trade-chart-shell"><aside class="chart-tools"><button>＋</button><button>╱</button><button>⌁</button><button>◌</button><button>T</button><button>⌖</button></aside><div class="trade-chart-area"><canvas class="large-chart trade-candles" id="tradeChart" aria-label="ETH USDT candlestick chart"></canvas><div class="trade-volume"><span>Vol</span><i style="height:30%"></i><i style="height:48%"></i><i style="height:22%"></i><i style="height:62%"></i><i style="height:40%"></i><i style="height:74%"></i><i style="height:35%"></i><i style="height:56%"></i></div></div></div><div class="trade-quote-row"><div><b>3,245.61</b><small>SELL</small></div><span>0.11</span><div><b>3,245.72</b><small>BUY</small></div></div><section class="trade-ticket"><div class="trade-ticket-head"><strong>Demo order</strong><span>Virtual funds · 10,000 USDT</span></div><form id="demoTradeForm"><div class="tabs"><button type="button" class="active" data-tab="buy">Buy</button><button type="button" data-tab="sell">Sell</button></div><input type="hidden" id="demoTradeSide" value="buy"><div class="form-field"><label for="demoTradeAmount">Amount in USDT</label><input id="demoTradeAmount" type="number" min="100" max="100000" step="0.01" placeholder="100.00" required></div><div class="notice-card">Estimated price <strong>$3,245.67 / ETH</strong><br>Execution is simulated server-side. No real order will be placed.</div><button class="btn btn-primary trade-submit" type="submit">Place demo order</button><p id="demoTradeMessage" role="status"></p></form></section></div>`;
 }
-
 function walletPage() {
   return `${heading("Wallet", "View your crypto balances and deposit availability.", `<button class="btn btn-primary" data-page-link="deposit">＋ &nbsp; Deposit</button>`)}<div class="wallet-grid">${assets
     .filter((a) => ["USDT", "ETH"].includes(a.symbol))
@@ -276,6 +288,7 @@ function navigate(page) {
   buildMarketTable();
   renderChart(document.getElementById("portfolioChart"));
   renderChart(document.getElementById("tradeChart"));
+  renderTradeCandles(document.getElementById("tradeChart"));
   document.querySelector(".platform-sidebar").classList.remove("open");
   document.querySelector(".mobile-shade").classList.remove("visible");
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -331,6 +344,13 @@ document.addEventListener("click", (e) => {
   if (nav) {
     e.preventDefault();
     navigate(nav.dataset.page || nav.dataset.pageLink);
+    return;
+  }
+  const tradeTab = e.target.closest("#demoTradeForm [data-tab]");
+  if (tradeTab) {
+    document.querySelectorAll("#demoTradeForm [data-tab]").forEach((b) => b.classList.toggle("active", b === tradeTab));
+    const side = document.getElementById("demoTradeSide");
+    if (side) side.value = tradeTab.dataset.tab;
     return;
   }
   const action = e.target.closest("[data-action]");
@@ -442,6 +462,7 @@ window.addEventListener("resize", () => {
   window.__chartResize = setTimeout(() => {
     renderChart(document.getElementById("portfolioChart"));
     renderChart(document.getElementById("tradeChart"));
+  renderTradeCandles(document.getElementById("tradeChart"));
   }, 120);
 });
 
@@ -900,6 +921,26 @@ async function loadDepositPage() {
   }
 }
 
+document.addEventListener("submit", async (event) => {
+  if (!event.target.matches("#demoTradeForm")) return;
+  event.preventDefault();
+  const form = event.target;
+  const button = form.querySelector("button[type=submit]");
+  const message = document.getElementById("demoTradeMessage");
+  const amountUsd = document.getElementById("demoTradeAmount")?.value;
+  const side = document.getElementById("demoTradeSide")?.value || "buy";
+  if (!window.CryptoWiseAPI?.trade) { if (message) message.textContent = "Trading API is not loaded."; return; }
+  button.disabled = true;
+  if (message) message.textContent = "Submitting demo order…";
+  try {
+    const result = await window.CryptoWiseAPI.trade({ mode: "demo", side, baseAsset: "ETH", quoteAsset: "USDT", amountUsd }, crypto.randomUUID());
+    if (message) message.textContent = `Filled ${result.trade.side} demo order for ${result.trade.amountUsd} USDT at ${result.trade.price}.`;
+    toast("Demo order filled. Your virtual wallet was updated.");
+    liveWallet = await window.CryptoWiseAPI.wallet();
+    renderConnectedAccount();
+  } catch (error) { if (message) message.textContent = error.message || "Demo order failed."; }
+  finally { button.disabled = false; }
+});
 document.addEventListener("change", (event) => {
   if (event.target.matches("#depositAsset")) updateDepositAssetDisplay();
 });

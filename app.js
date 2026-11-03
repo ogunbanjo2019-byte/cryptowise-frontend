@@ -1,7 +1,5 @@
 (() => {
   "use strict";
-
-  // Prevent duplicate initialization if this file is accidentally included twice.
   if (window.__cryptoWiseLandingInitialized) return;
   window.__cryptoWiseLandingInitialized = true;
 
@@ -291,3 +289,4 @@
     initializeLandingPage();
   }
 })();
+  
