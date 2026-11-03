@@ -177,7 +177,7 @@ function marketsPage() {
 }
 
 function tradePage() {
-  return `${heading("Trade", "Markets move fast. Keep your plan clear.", `<span class="status">Demo mode</span>`)}<div class="trading-workspace"><div class="trade-topbar"><button class="symbol-button">⌘ &nbsp; ETH/USDT <small>Ethereum / Tether</small></button><button>＋</button><span class="trade-price">3,245.67 <em>+1.18%</em></span><button class="icon-tool">⌁</button><button class="icon-tool">↗</button></div><div class="trade-timebar"><button class="active">15m</button><button>1H</button><button>4H</button><button>1D</button><button>1W</button><span></span><button>Indicators⌄</button><button>Alert</button></div><div class="trade-chart-shell"><aside class="chart-tools"><button>＋</button><button>╱</button><button>⌁</button><button>◌</button><button>T</button><button>⌖</button></aside><div class="trade-chart-area"><canvas class="large-chart trade-candles" id="tradeChart" aria-label="ETH USDT candlestick chart"></canvas><div class="trade-volume"><span>Vol</span><i style="height:30%"></i><i style="height:48%"></i><i style="height:22%"></i><i style="height:62%"></i><i style="height:40%"></i><i style="height:74%"></i><i style="height:35%"></i><i style="height:56%"></i></div></div></div><div class="trade-quote-row"><div><b>3,245.61</b><small>SELL</small></div><span>0.11</span><div><b>3,245.72</b><small>BUY</small></div></div><section class="trade-ticket"><div class="trade-ticket-head"><strong>Demo order</strong><span>Virtual funds · 10,000 USDT</span></div><form id="demoTradeForm"><div class="tabs"><button type="button" class="active" data-tab="buy">Buy</button><button type="button" data-tab="sell">Sell</button></div><input type="hidden" id="demoTradeSide" value="buy"><div class="form-field"><label for="demoTradeAmount">Amount in USDT</label><input id="demoTradeAmount" type="number" min="100" max="100000" step="0.01" placeholder="100.00" required></div><div class="notice-card">Estimated price <strong>$3,245.67 / ETH</strong><br>Execution is simulated server-side. No real order will be placed.</div><button class="btn btn-primary trade-submit" type="submit">Place demo order</button><p id="demoTradeMessage" role="status"></p></form></section></div>`;
+  return `${heading("Trade", "Markets move fast. Keep your plan clear.", `<span class="status">Demo mode</span>`)}<div class="trading-workspace"><div class="trade-topbar"><button class="symbol-button">⌘ &nbsp; ETH/USDT <small>Ethereum / Tether</small></button><button>＋</button><span class="trade-price">3,245.67 <em>+1.18%</em></span><button class="icon-tool">⌁</button><button class="icon-tool">↗</button></div><div class="trade-timebar"><button class="active">15m</button><button>1H</button><button>4H</button><button>1D</button><button>1W</button><span></span><button>Indicators⌄</button><button>Alert</button></div><div class="trade-chart-shell"><aside class="chart-tools"><button>＋</button><button>╱</button><button>⌁</button><button>◌</button><button>T</button><button>⌖</button></aside><div class="trade-chart-area"><canvas class="large-chart trade-candles" id="tradeChart" aria-label="ETH USDT candlestick chart"></canvas><div class="trade-volume"><span>Vol</span><i style="height:30%"></i><i style="height:48%"></i><i style="height:22%"></i><i style="height:62%"></i><i style="height:40%"></i><i style="height:74%"></i><i style="height:35%"></i><i style="height:56%"></i></div></div></div><div class="trade-quote-row"><div><b>3,245.61</b><small>SELL</small></div><span>0.11</span><div><b>3,245.72</b><small>BUY</small></div></div><section class="trade-ticket"><div class="mode-tabs"><button type="button" class="active" data-trade-mode="demo">Demo</button><button type="button" data-trade-mode="bybit">Real · Bybit</button></div><div class="trade-ticket-head"><strong id="tradeModeTitle">Demo order</strong><span id="tradeModeNote">Virtual funds · 10,000 USDT</span></div><form id="demoTradeForm"><input type="hidden" id="demoTradeMode" value="demo"><div class="tabs"><button type="button" class="active" data-tab="buy">Buy</button><button type="button" data-tab="sell">Sell</button></div><input type="hidden" id="demoTradeSide" value="buy"><div class="form-field"><label for="demoTradeAmount">Amount in USDT</label><input id="demoTradeAmount" type="number" min="100" max="100000" step="0.01" placeholder="100.00" required></div><div class="notice-card">Estimated price <strong>$3,245.67 / ETH</strong><br>Execution is simulated server-side. No real order will be placed.</div><button class="btn btn-primary trade-submit" type="submit">Place demo order</button><p id="demoTradeMessage" role="status"></p></form></section></div>`;
 }
 function walletPage() {
   return `${heading("Wallet", "View your crypto balances and deposit availability.", `<button class="btn btn-primary" data-page-link="deposit">＋ &nbsp; Deposit</button>`)}<div class="wallet-grid">${assets
@@ -344,6 +344,16 @@ document.addEventListener("click", (e) => {
   if (nav) {
     e.preventDefault();
     navigate(nav.dataset.page || nav.dataset.pageLink);
+    return;
+  }
+  const modeTab = e.target.closest("[data-trade-mode]");
+  if (modeTab) {
+    document.querySelectorAll("[data-trade-mode]").forEach((b) => b.classList.toggle("active", b === modeTab));
+    const mode = modeTab.dataset.tradeMode;
+    const input = document.getElementById("demoTradeMode"); if (input) input.value = mode;
+    const title = document.getElementById("tradeModeTitle"); if (title) title.textContent = mode === "bybit" ? "Real Bybit order" : "Demo order";
+    const note = document.getElementById("tradeModeNote"); if (note) note.textContent = mode === "bybit" ? "Bybit spot · server-side credentials" : "Virtual funds · 10,000 USDT";
+    const submit = document.querySelector("#demoTradeForm .trade-submit"); if (submit) submit.textContent = mode === "bybit" ? "Place real Bybit order" : "Place demo order";
     return;
   }
   const tradeTab = e.target.closest("#demoTradeForm [data-tab]");
@@ -929,12 +939,14 @@ document.addEventListener("submit", async (event) => {
   const message = document.getElementById("demoTradeMessage");
   const amountUsd = document.getElementById("demoTradeAmount")?.value;
   const side = document.getElementById("demoTradeSide")?.value || "buy";
+  const mode = document.getElementById("demoTradeMode")?.value || "demo";
+  if (mode === "bybit" && !window.confirm("This sends a real spot market order to the configured Bybit account. Continue?")) return;
   if (!window.CryptoWiseAPI?.trade) { if (message) message.textContent = "Trading API is not loaded."; return; }
   button.disabled = true;
   if (message) message.textContent = "Submitting demo order…";
   try {
-    const result = await window.CryptoWiseAPI.trade({ mode: "demo", side, baseAsset: "ETH", quoteAsset: "USDT", amountUsd }, crypto.randomUUID());
-    if (message) message.textContent = `Filled ${result.trade.side} demo order for ${result.trade.amountUsd} USDT at ${result.trade.price}.`;
+    const result = await window.CryptoWiseAPI.trade({ mode, side, baseAsset: "ETH", quoteAsset: "USDT", amountUsd }, crypto.randomUUID());
+    if (message) message.textContent = mode === "bybit" ? `Bybit accepted ${result.trade.side} order ${result.trade.orderId || result.trade.orderLinkId || ""}. Confirm fills in Bybit.` : `Filled ${result.trade.side} demo order for ${result.trade.amountUsd} USDT at ${result.trade.price}.`;
     toast("Demo order filled. Your virtual wallet was updated.");
     liveWallet = await window.CryptoWiseAPI.wallet();
     renderConnectedAccount();
