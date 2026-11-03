@@ -55,6 +55,7 @@ const authApi = {
     const cred = await createUserWithEmailAndPassword(auth, email, password);
     if (displayName) await updateProfile(cred.user, { displayName });
     await sendEmailVerification(cred.user);
+    await signOut(auth);
     return cred.user;
   },
   signIn: async (email, password) => {

@@ -18,15 +18,9 @@
   <!-- 2. Load API client second -->
   <script src="js/client.js" defer></script>
   
-  <!-- 3. Load Firebase Authentication module third -->
+  <!-- Authentication initializes after the shared API client. -->
   <script type="module" src="js/firebase-auth.js"></script>
-  <!-- Load your API configuration first -->
-<script src="api.js"></script>
-
-<!-- Then load your main application logic -->
-<script src="app.js"></script>
-  
-  <!-- 4. Load main application script last -->
+  <!-- Register page interactions once, after the document has been parsed. -->
   <script src="app.js" defer></script>
   <script src="demo-features.js" defer></script>
 </head>

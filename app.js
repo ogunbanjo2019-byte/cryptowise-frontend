@@ -172,7 +172,7 @@ form.addEventListener('submit', async e => {
   try {
     const auth = await window.CryptoWiseWaitForAuth();
     if (!auth?.configured) {
-      throw new Error('Firebase configuration is missing. Check api/config.js.');
+      throw new Error('Firebase configuration is missing. Check js/config.js.');
     }
 
     const email = document.getElementById('emailField').value.trim();
@@ -185,8 +185,8 @@ form.addEventListener('submit', async e => {
     } else {
       const displayName = document.getElementById('nameField').value.trim();
       await auth.signUp({ email, password, displayName });
-      message.textContent = 'Account created successfully! Check your email for the verification link, then sign in.';
       setMode(true);
+      message.textContent = 'Account created. Check your email for the verification link, then sign in.';
     }
   } catch (error) {
     message.textContent = error.message || 'Authentication failed. Please try again.';

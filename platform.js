@@ -256,6 +256,8 @@ let currentPage = "overview";
 let liveWallet = null;
 let liveProfile = null;
 let liveDepositInstructions = null;
+// Display safeguard only; all fund controls must remain enforced by the backend.
+const customerDepositUiReleased = false;
 
 function buildMarketTable() {
   const host = document.getElementById("marketTable");
@@ -704,9 +706,17 @@ async function connectCustomerApi() {
   const badge = document.querySelector(".demo-indicator");
   try {
     const health = await window.CryptoWiseAPI.health();
-    if (badge)
-      badge.textContent =
-        health.status === "ok" ? "API connected" : "API unavailable";
+    if (badge) {
+      const liveOperationsFlag = health.fundsEnabled === true || health.tradingEnabled === true;
+      badge.textContent = health.status !== "ok"
+        ? "API unavailable"
+        : liveOperationsFlag
+          ? "API online · live flags need review"
+          : "API connected · preview only";
+      if (liveOperationsFlag) {
+        badge.setAttribute("title", "The API reports live funds or trading enabled. This frontend keeps customer actions blocked pending verification.");
+      }
+    }
   } catch {
     if (badge) badge.textContent = "API offline · preview";
   }
@@ -797,12 +807,11 @@ function updateDepositAssetDisplay() {
   const asset = (liveDepositInstructions?.assets || []).find(
     (x) => x.asset === select.value,
   );
-  const enabled = liveDepositInstructions?.enabled === true && !!asset?.address;
+  const enabled = customerDepositUiReleased && liveDepositInstructions?.enabled === true && !!asset?.address;
 
-  note.textContent =
-    liveDepositInstructions?.notice ||
-    liveDepositInstructions?.reason ||
-    "Deposits are paused.";
+  note.textContent = enabled
+    ? (liveDepositInstructions?.notice || "Deposits are available.")
+    : "Deposits are paused pending independent backend safety review. Do not send funds.";
   address.textContent = enabled ? asset.address : "No active receiving address";
   details.textContent = enabled
     ? `${asset.asset} · ${liveDepositInstructions.network} · ${asset.tokenContract ? "Token contract: " + asset.tokenContract : "Native asset"}`
@@ -900,7 +909,7 @@ document.addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = event.target,
     button = form.querySelector("button[type=submit]");
-  if (!liveDepositInstructions?.enabled) {
+  if (!customerDepositUiReleased || !liveDepositInstructions?.enabled) {
     toast("Deposits are paused; no request was submitted.");
     return;
   }
