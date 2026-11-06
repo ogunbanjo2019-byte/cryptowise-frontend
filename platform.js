@@ -165,7 +165,7 @@ function renderTradeCandles(canvas) {
   const last = closes[closes.length-1]; c.setLineDash([4,4]); c.strokeStyle="#e5b34e"; c.beginPath(); c.moveTo(0,y(last)); c.lineTo(w,y(last)); c.stroke(); c.setLineDash([]); c.fillStyle="#e5b34e"; c.fillRect(w-52,y(last)-9,52,18); c.fillStyle="#07171f"; c.textAlign="center"; c.fillText(last.toFixed(2),w-26,y(last)+3);
 }
 function dashboard() {
-  return `${heading("My accounts", "Manage your real and demo trading accounts.", `<button class="btn btn-primary" data-page-link="trade">Trade now ↗</button>`)}<section class="account-shell"><div class="account-alert"><strong>Secure your funds</strong><span>Use strong authentication and keep withdrawals protected.</span><b>✓</b></div><div class="account-tabs"><button class="active" type="button">Real</button><button type="button">Demo</button><span>＋ Open account</span></div><div class="account-toolbar"><span>☷ &nbsp; Newest</span><span>⌄</span></div><article class="account-card"><div class="account-card-top"><span><i></i> Real &nbsp; <b>CryptoWise</b> &nbsp; Standard</span><span>⌄</span></div><small class="account-number"># CW-000001 · Standard account</small><strong class="account-balance">$0.00<em> USD</em></strong><div class="account-actions"><button data-page-link="deposit">＋<small>Deposit</small></button><button data-page-link="trade">⇄<small>Trade</small></button><button data-page-link="wallet">•••<small>More</small></button></div></article><article class="account-card demo-account"><div class="account-card-top"><span><i></i> Demo &nbsp; <b>CryptoWise</b> &nbsp; Practice</span><span>⌄</span></div><small class="account-number"># DEMO-000001 · Virtual account</small><strong class="account-balance">$10,000.00<em> USD</em></strong><div class="account-actions"><button data-page-link="trade">⇄<small>Trade</small></button><button data-page-link="wallet">▣<small>Wallet</small></button><button data-page-link="history">•••<small>More</small></button></div></article></section><div class="metric-grid">${metric("TOTAL BALANCE", "$24,680.50", "<em>↗ 8.24%</em> this month", "◉")}${metric("TODAY’S CHANGE", "+$384.21", "<em>↗ 1.58%</em> today", "↗")}${metric("ASSETS HELD", "4", "Across 3 asset types", "▣")}</div><div class="overview-grid"><section class="panel chart-panel"><div class="panel-title"><div><h2>Portfolio performance</h2><div class="chart-legend"><span></span> Total value</div></div><div class="period-select"><button>1D</button><button>1W</button><button class="chosen">1M</button><button>1Y</button><button>ALL</button></div></div><canvas class="large-chart" id="portfolioChart" aria-label="Portfolio performance chart"></canvas></section><section class="panel"><div class="panel-title"><h2>Your assets</h2><button data-page-link="wallet">View wallet ↗</button></div>${assetList()}</section></div><div class="dashboard-lower"><section class="panel"><div class="panel-title"><h2>Recent activity</h2><button data-page-link="history">View history ↗</button></div><div class="table-wrap"><table class="activity-table"><thead><tr><th>ACTIVITY</th><th>AMOUNT</th><th>ASSET</th><th>STATUS</th><th>DATE</th></tr></thead><tbody>${activityRows(transactions.slice(0, 4))}</tbody></table></div></section><section class="panel"><div class="panel-title"><h2>Market snapshot</h2><button data-page-link="markets">All markets ↗</button></div>${marketRows(assets.slice(0, 3))}</section></div><div class="deposit-callout"><div><h3>Your first deposit comes with a bonus</h3><p>Eligible deposits may qualify for our welcome promotion. Terms apply.</p></div><button class="btn btn-primary" data-page-link="promotions">Explore bonus ↗</button></div>`;
+  return `${heading("My accounts", "Manage your real and demo trading accounts.", `<button class="btn btn-primary" data-page-link="trade">Trade now ↗</button>`)}<section class="account-shell"><div class="account-alert"><strong>Secure your funds</strong><span>Use strong authentication and keep withdrawals protected.</span><b>✓</b></div><div class="account-tabs"><button class="active" type="button">Real</button><button type="button">Demo</button><span>＋ Open account</span></div><div class="account-toolbar"><span>☷ &nbsp; Newest</span><span>⌄</span></div><article class="account-card"><div class="account-card-top"><span><i></i> Real &nbsp; <b>CryptoWise</b> &nbsp; Standard</span><span>⌄</span></div><small class="account-number" data-account-number="real">Account ID loading… · Real account</small><strong class="account-balance" data-account-balance="real">Live balance unavailable<em> USD</em></strong><div class="account-actions"><button data-page-link="deposit">＋<small>Deposit</small></button><button data-page-link="trade">⇄<small>Trade</small></button><button data-page-link="wallet">•••<small>More</small></button></div></article><article class="account-card demo-account"><div class="account-card-top"><span><i></i> Demo &nbsp; <b>CryptoWise</b> &nbsp; Practice</span><span>⌄</span></div><small class="account-number" data-account-number="demo">Demo account loading… · Virtual account</small><strong class="account-balance" data-account-balance="demo">10,000.00<em> USDT (virtual)</em></strong><div class="account-actions"><button data-page-link="trade">⇄<small>Trade</small></button><button data-page-link="wallet">▣<small>Wallet</small></button><button data-page-link="history">•••<small>More</small></button></div></article></section><div class="metric-grid">${metric("TOTAL BALANCE", "$24,680.50", "<em>↗ 8.24%</em> this month", "◉")}${metric("TODAY’S CHANGE", "+$384.21", "<em>↗ 1.58%</em> today", "↗")}${metric("ASSETS HELD", "4", "Across 3 asset types", "▣")}</div><div class="overview-grid"><section class="panel chart-panel"><div class="panel-title"><div><h2>Portfolio performance</h2><div class="chart-legend"><span></span> Total value</div></div><div class="period-select"><button>1D</button><button>1W</button><button class="chosen">1M</button><button>1Y</button><button>ALL</button></div></div><canvas class="large-chart" id="portfolioChart" aria-label="Portfolio performance chart"></canvas></section><section class="panel"><div class="panel-title"><h2>Your assets</h2><button data-page-link="wallet">View wallet ↗</button></div>${assetList()}</section></div><div class="dashboard-lower"><section class="panel"><div class="panel-title"><h2>Recent activity</h2><button data-page-link="history">View history ↗</button></div><div class="table-wrap"><table class="activity-table"><thead><tr><th>ACTIVITY</th><th>AMOUNT</th><th>ASSET</th><th>STATUS</th><th>DATE</th></tr></thead><tbody>${activityRows(transactions.slice(0, 4))}</tbody></table></div></section><section class="panel"><div class="panel-title"><h2>Market snapshot</h2><button data-page-link="markets">All markets ↗</button></div>${marketRows(assets.slice(0, 3))}</section></div><div class="deposit-callout"><div><h3>Your first deposit comes with a bonus</h3><p>Eligible deposits may qualify for our welcome promotion. Terms apply.</p></div><button class="btn btn-primary" data-page-link="promotions">Explore bonus ↗</button></div>`;
 }
 
 function marketRows(list = assets) {
@@ -177,7 +177,7 @@ function marketsPage() {
 }
 
 function tradePage() {
-  return `${heading("Trade", "Markets move fast. Keep your plan clear.", `<span class="status">Demo mode</span>`)}<div class="trading-workspace"><div class="trade-topbar"><button class="symbol-button">⌘ &nbsp; ETH/USDT <small>Ethereum / Tether</small></button><button>＋</button><span class="trade-price">3,245.67 <em>+1.18%</em></span><button class="icon-tool">⌁</button><button class="icon-tool">↗</button></div><div class="trade-timebar"><button class="active">15m</button><button>1H</button><button>4H</button><button>1D</button><button>1W</button><span></span><button>Indicators⌄</button><button>Alert</button></div><div class="trade-chart-shell"><aside class="chart-tools"><button>＋</button><button>╱</button><button>⌁</button><button>◌</button><button>T</button><button>⌖</button></aside><div class="trade-chart-area"><canvas class="large-chart trade-candles" id="tradeChart" aria-label="ETH USDT candlestick chart"></canvas><div class="trade-volume"><span>Vol</span><i style="height:30%"></i><i style="height:48%"></i><i style="height:22%"></i><i style="height:62%"></i><i style="height:40%"></i><i style="height:74%"></i><i style="height:35%"></i><i style="height:56%"></i></div></div></div><div class="trade-quote-row"><div><b>3,245.61</b><small>SELL</small></div><span>0.11</span><div><b>3,245.72</b><small>BUY</small></div></div><section class="trade-ticket"><div class="mode-tabs"><button type="button" class="active" data-trade-mode="demo">Demo</button><button type="button" data-trade-mode="bybit">Real · Bybit</button></div><div class="trade-ticket-head"><strong id="tradeModeTitle">Demo order</strong><span id="tradeModeNote">Virtual funds · 10,000 USDT</span></div><form id="demoTradeForm"><input type="hidden" id="demoTradeMode" value="demo"><div class="tabs"><button type="button" class="active" data-tab="buy">Buy</button><button type="button" data-tab="sell">Sell</button></div><input type="hidden" id="demoTradeSide" value="buy"><div class="form-field"><label for="demoTradeAmount">Amount in USDT</label><input id="demoTradeAmount" type="number" min="100" max="100000" step="0.01" placeholder="100.00" required></div><div class="notice-card">Estimated price <strong>$3,245.67 / ETH</strong><br>Execution is simulated server-side. No real order will be placed.</div><button class="btn btn-primary trade-submit" type="submit">Place demo order</button><p id="demoTradeMessage" role="status"></p></form></section></div>`;
+  return `${heading("Trade", "Markets move fast. Keep your plan clear.", `<span class="status">Demo mode</span>`)}<div class="trading-workspace"><div class="trade-topbar"><button class="symbol-button">⌘ &nbsp; ETH/USDT <small>Ethereum / Tether</small></button><button>＋</button><span class="trade-price">3,245.67 <em>+1.18%</em></span><button class="icon-tool">⌁</button><button class="icon-tool">↗</button></div><div class="trade-timebar"><button class="active">15m</button><button>1H</button><button>4H</button><button>1D</button><button>1W</button><span></span><button>Indicators⌄</button><button>Alert</button></div><div class="trade-chart-shell"><aside class="chart-tools"><button>＋</button><button>╱</button><button>⌁</button><button>◌</button><button>T</button><button>⌖</button></aside><div class="trade-chart-area"><canvas class="large-chart trade-candles" id="tradeChart" aria-label="ETH USDT candlestick chart"></canvas><div class="trade-volume"><span>Vol</span><i style="height:30%"></i><i style="height:48%"></i><i style="height:22%"></i><i style="height:62%"></i><i style="height:40%"></i><i style="height:74%"></i><i style="height:35%"></i><i style="height:56%"></i></div></div></div><div class="trade-quote-row"><div><b>3,245.61</b><small>SELL</small></div><span>0.11</span><div><b>3,245.72</b><small>BUY</small></div></div><section class="trade-ticket"><div class="mode-tabs"><button type="button" class="active" data-trade-mode="demo">Demo</button><button type="button" disabled aria-disabled="true" title="Live trading is unavailable until a verified exchange adapter and risk controls are configured">Real · Unavailable</button></div><div class="trade-ticket-head"><strong id="tradeModeTitle">Demo order</strong><span id="tradeModeNote">Simulated prices · virtual practice balance</span><small id="tradeAccountNumber">Practice account · virtual only</small></div><form id="demoTradeForm"><input type="hidden" id="demoTradeMode" value="demo"><div class="tabs"><button type="button" class="active" data-tab="buy">Buy</button><button type="button" data-tab="sell">Sell</button></div><input type="hidden" id="demoTradeSide" value="buy"><div class="form-field"><label for="demoTradeAmount">Amount in USDT</label><input id="demoTradeAmount" type="number" min="100" max="100000" step="0.01" placeholder="100.00" required></div><div class="notice-card">Simulated price <strong>3,245.67 USDT / ETH</strong><br>Practice orders use a separate virtual balance. No real order or real asset movement occurs.</div><button class="btn btn-primary trade-submit" type="submit">Place demo order</button><p id="demoTradeMessage" role="status"></p></form></section></div>`;
 }
 function walletPage() {
   return `${heading("Wallet", "View your crypto balances and deposit availability.", `<button class="btn btn-primary" data-page-link="deposit">＋ &nbsp; Deposit</button>`)}<div class="wallet-grid">${assets
@@ -294,7 +294,7 @@ function navigate(page) {
   window.scrollTo({ top: 0, behavior: "smooth" });
   if (liveProfile) renderConnectedAccount();
   if (currentPage === "deposit") loadDepositPage();
-  if (currentPage === "settings") loadUserPreferences();
+  if (currentPage === "settings") { loadUserPreferences(); loadUserNotifications(); }
 }
 
 // ==========================================
@@ -351,9 +351,9 @@ document.addEventListener("click", (e) => {
     document.querySelectorAll("[data-trade-mode]").forEach((b) => b.classList.toggle("active", b === modeTab));
     const mode = modeTab.dataset.tradeMode;
     const input = document.getElementById("demoTradeMode"); if (input) input.value = mode;
-    const title = document.getElementById("tradeModeTitle"); if (title) title.textContent = mode === "bybit" ? "Real Bybit order" : "Demo order";
-    const note = document.getElementById("tradeModeNote"); if (note) note.textContent = mode === "bybit" ? "Bybit spot · server-side credentials" : "Virtual funds · 10,000 USDT";
-    const submit = document.querySelector("#demoTradeForm .trade-submit"); if (submit) submit.textContent = mode === "bybit" ? "Place real Bybit order" : "Place demo order";
+    const title = document.getElementById("tradeModeTitle"); if (title) title.textContent = "Demo order";
+    const note = document.getElementById("tradeModeNote"); if (note) note.textContent = `Practice account ${liveProfile?.customerNumber ? "DEMO-" + liveProfile.customerNumber.replace(/^CW-/, "") : "· virtual balance"}`;
+    const submit = document.querySelector("#demoTradeForm .trade-submit"); if (submit) submit.textContent = "Place demo order";
     return;
   }
   const tradeTab = e.target.closest("#demoTradeForm [data-tab]");
@@ -482,15 +482,30 @@ navigate("overview");
 // 5. AUTHENTICATED BACKEND DATA & SYNC
 // ==========================================
 
-function atomicDisplay(raw, decimals) {
+function atomicDisplay(raw, decimals, maxFractionDigits = 6) {
   const scale = 10n ** BigInt(decimals);
   const value = BigInt(raw || "0");
   const whole = value / scale;
-  const fraction = (value % scale)
-    .toString()
-    .padStart(decimals, "0")
-    .replace(/0+$/, "");
-  return `${whole}${fraction ? "." + fraction : ""}`;
+  const fraction = (value % scale).toString().padStart(decimals, "0").replace(/0+$/, "").slice(0, maxFractionDigits).replace(/0+$/, "");
+  const groupedWhole = whole.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  return `${groupedWhole}${fraction ? "." + fraction : ""}`;
+}
+function compactAmount(value) {
+  const amount = Number(value);
+  if (!Number.isFinite(amount)) return "—";
+  const abs = Math.abs(amount);
+  const divisor = abs >= 1_000_000 ? 1_000_000 : abs >= 1_000 ? 1_000 : 1;
+  const suffix = divisor === 1_000_000 ? "M" : divisor === 1_000 ? "K" : "";
+  return new Intl.NumberFormat("en-US", { minimumFractionDigits: suffix ? 1 : 2, maximumFractionDigits: suffix ? 2 : 2 }).format(amount / divisor) + suffix;
+}
+function setAccountBalance(element, amount, unit, exact) {
+  if (!element) return;
+  element.replaceChildren();
+  element.append(document.createTextNode(amount));
+  const label = document.createElement("em");
+  label.textContent = unit;
+  element.append(label);
+  if (exact) element.title = `Exact balance: ${exact} ${unit.trim()}`;
 }
 
 function getTimeGreeting(name, date = new Date()) {
@@ -532,6 +547,20 @@ function renderConnectedAccount() {
   );
   if (customerNumberField)
     customerNumberField.value = liveProfile?.customerNumber || "";
+  const realId = document.querySelector('[data-account-number="real"]');
+  if (realId) realId.textContent = `${liveProfile?.customerNumber || "Account ID unavailable"} · Real account`;
+  const demoId = document.querySelector('[data-account-number="demo"]');
+  if (demoId) demoId.textContent = `${liveProfile?.customerNumber ? "DEMO-" + liveProfile.customerNumber.replace(/^CW-/, "") : "Demo account"} · Virtual only`;
+  const realBalance = document.querySelector('[data-account-balance="real"]');
+  const liveUsdtExact = liveWallet ? atomicDisplay(liveWallet.availableAtomic?.USDT, 6, 6) : null;
+  setAccountBalance(realBalance, liveUsdtExact === null ? "Unavailable" : compactAmount(liveUsdtExact), " USDT · live", liveUsdtExact);
+  const demoBalance = document.querySelector('[data-account-balance="demo"]');
+  const demoUsdtExact = liveWallet?.demo ? atomicDisplay(liveWallet.demo.availableAtomic?.USDT, 6, 6) : "10000.00";
+  setAccountBalance(demoBalance, compactAmount(demoUsdtExact), " USDT · virtual", demoUsdtExact);
+  const demoNote = document.getElementById("tradeModeNote");
+  if (demoNote) demoNote.textContent = `Practice account ${liveProfile?.customerNumber ? "DEMO-" + liveProfile.customerNumber.replace(/^CW-/, "") : "· virtual balance"} · ${compactAmount(demoUsdtExact)} USDT`;
+  const tradeAccount = document.getElementById("tradeAccountNumber");
+  if (tradeAccount) tradeAccount.textContent = liveProfile?.customerNumber ? `Practice account: DEMO-${liveProfile.customerNumber.replace(/^CW-/, "")}` : "Practice account · virtual only";
   const avatar = document.querySelector(".profile-avatar");
   if (avatar)
     avatar.textContent =
@@ -685,11 +714,22 @@ async function saveUserPreferences() {
 
 async function loadUserNotifications() {
   const host = document.getElementById("notificationsList");
-  if (!host) return;
-  host.textContent = "Loading your notifications…";
+  if (host) host.textContent = "Loading your notifications…";
   try {
     const result = await window.CryptoWiseAPI.notifications();
     const items = result.notifications || [];
+    const unreadCount = items.filter((item) => !item.readAt).length;
+    const bell = document.querySelector('[data-action="open-notifications"]');
+    let badge = bell?.querySelector("[data-unread-count]");
+    if (bell && unreadCount > 0) {
+      if (!badge) { badge = document.createElement("span"); badge.dataset.unreadCount = "true"; badge.className = "notification-count"; bell.append(badge); }
+      badge.textContent = unreadCount > 99 ? "99+" : String(unreadCount);
+      bell.setAttribute("aria-label", `${unreadCount} unread notifications`);
+    } else {
+      badge?.remove();
+      bell?.setAttribute("aria-label", "Notifications");
+    }
+    if (!host) return;
     host.replaceChildren();
     if (!items.length) {
       host.textContent = "You have no notifications yet.";
@@ -715,7 +755,7 @@ async function loadUserNotifications() {
       host.append(card);
     });
   } catch (error) {
-    host.textContent = error.message || "Could not load notifications.";
+    if (host) host.textContent = error.message || "Could not load notifications.";
   }
 }
 
@@ -782,6 +822,7 @@ async function connectCustomerApi() {
         console.warn("CryptoWise wallet request failed:", walletError.message);
       }
       if (currentPage === "deposit") loadDepositPage();
+      await loadUserNotifications();
       if (currentPage === "settings") loadUserPreferences();
     } catch (error) {
       if (badge) badge.textContent = "API error · preview";
@@ -838,19 +879,22 @@ function updateDepositAssetDisplay() {
   const asset = (liveDepositInstructions?.assets || []).find(
     (x) => x.asset === select.value,
   );
-  const enabled = customerDepositUiReleased && liveDepositInstructions?.enabled === true && !!asset?.address;
+  const addressConfigured = !!asset?.address;
+  const enabled = customerDepositUiReleased && liveDepositInstructions?.enabled === true && addressConfigured;
 
   note.textContent = enabled
     ? (liveDepositInstructions?.notice || "Deposits are available.")
-    : "Deposits are paused pending independent backend safety review. Do not send funds.";
-  address.textContent = enabled ? asset.address : "No active receiving address";
-  details.textContent = enabled
-    ? `${asset.asset} · ${liveDepositInstructions.network} · ${asset.tokenContract ? "Token contract: " + asset.tokenContract : "Native asset"}`
-    : "No verified deposit instructions are active. Do not send assets.";
+    : addressConfigured
+      ? (liveDepositInstructions?.notice || "An address is configured, but deposits are paused. Do not send funds; transfers are not monitored or credited.")
+      : "Deposits are paused and no receiving address is configured.";
+  address.textContent = addressConfigured ? asset.address : "No configured receiving address";
+  details.textContent = addressConfigured
+    ? `${asset.asset} · ${liveDepositInstructions.network} · ${asset.tokenContract ? "Token contract: " + asset.tokenContract : "Native asset"}${enabled ? " · Active" : " · DISPLAY ONLY — deposits paused; no automatic monitoring or crediting"}`
+    : "No receiving address is configured for this asset. Do not send funds.";
   form.hidden = !enabled;
-  if (copy) copy.hidden = !enabled;
+  if (copy) copy.hidden = !addressConfigured;
   if (badge) {
-    badge.textContent = enabled ? "Available" : "Paused";
+    badge.textContent = enabled ? "Available" : addressConfigured ? "Configured · paused" : "Paused";
     badge.className = `status ${enabled ? "" : "pending"}`;
   }
 }
@@ -940,16 +984,17 @@ document.addEventListener("submit", async (event) => {
   const amountUsd = document.getElementById("demoTradeAmount")?.value;
   const side = document.getElementById("demoTradeSide")?.value || "buy";
   const mode = document.getElementById("demoTradeMode")?.value || "demo";
-  if (mode === "bybit" && !window.confirm("This sends a real spot market order to the configured Bybit account. Continue?")) return;
+  if (mode !== "demo") { if (message) message.textContent = "Live trading is not enabled. Your demo order was not submitted."; return; }
   if (!window.CryptoWiseAPI?.trade) { if (message) message.textContent = "Trading API is not loaded."; return; }
   button.disabled = true;
   if (message) message.textContent = "Submitting demo order…";
   try {
     const result = await window.CryptoWiseAPI.trade({ mode, side, baseAsset: "ETH", quoteAsset: "USDT", amountUsd }, crypto.randomUUID());
-    if (message) message.textContent = mode === "bybit" ? `Bybit accepted ${result.trade.side} order ${result.trade.orderId || result.trade.orderLinkId || ""}. Confirm fills in Bybit.` : `Filled ${result.trade.side} demo order for ${result.trade.amountUsd} USDT at ${result.trade.price}.`;
+    if (message) message.textContent = `Demo ${result.trade.side} order filled: ${Number(result.trade.amountUsd).toLocaleString("en-US", { maximumFractionDigits: 2 })} USDT at ${Number(result.trade.price).toLocaleString("en-US", { maximumFractionDigits: 2 })} USDT/ETH. No real assets were traded.`;
     toast("Demo order filled. Your virtual wallet was updated.");
     liveWallet = await window.CryptoWiseAPI.wallet();
     renderConnectedAccount();
+    await loadUserNotifications();
   } catch (error) { if (message) message.textContent = error.message || "Demo order failed."; }
   finally { button.disabled = false; }
 });
