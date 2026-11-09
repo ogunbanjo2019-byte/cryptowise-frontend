@@ -18,6 +18,26 @@
       element?.addEventListener(eventName, handler);
     };
 
+    // Fetch live deposit status & address from backend
+    async function loadLiveDepositData() {
+      try {
+        const response = await fetch('http://localhost:10000/v1/deposit/address?asset=ETH');
+        const data = await response.json();
+        
+        if (response.ok && data.address) {
+          const statusBanner = select('.status-banner');
+          if (statusBanner) statusBanner.textContent = data.message || 'System online - Ready for deposits';
+
+          const addressBox = select('.address-display');
+          if (addressBox) addressBox.textContent = data.address;
+        }
+      } catch (error) {
+        console.error('Failed to load deposit configuration:', error);
+      }
+    }
+
+    loadLiveDepositData();
+
     function drawSparkline(canvas, values) {
       if (!canvas || !values?.length) return;
       const dpr = window.devicePixelRatio || 1;
@@ -289,4 +309,3 @@
     initializeLandingPage();
   }
 })();
-  
