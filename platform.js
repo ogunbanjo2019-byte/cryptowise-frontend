@@ -192,7 +192,7 @@ function walletPage() {
 }
 
 function depositPage() {
-  return `${heading("Crypto deposits", "View receiving instructions and track deposit requests. Do not send funds while this page says deposits are paused.")}<section class="panel"><div class="panel-title"><h2>Ethereum deposits · ETH and USDT</h2><span class="status pending" id="depositAvailability">Checking status</span></div><div class="notice-card" id="depositNetworkNote">Loading backend deposit status…</div><div class="form-field" style="margin-top:12px"><label for="depositAsset">Asset</label><select id="depositAsset"><option value="ETH">ETH · native Ethereum</option><option value="USDT">USDT · Ethereum ERC-20</option></select></div><div class="notice-card"><strong>Receiving address</strong><br><code id="depositAddress">No active receiving address</code><button type="button" class="btn btn-secondary" id="copyDepositAddress" style="margin-left:10px" hidden>Copy</button></div><div class="notice-card" id="depositAssetDetails">No verified deposit instructions are active. Never send assets to the address shown in another app unless CryptoWise presents it here as active.</div><form id="depositRequestForm" hidden><div class="form-field"><label for="depositTxHash">Transaction hash</label><input id="depositTxHash" name="txHash" type="text" inputmode="text" autocomplete="off" placeholder="0x…" pattern="0x[a-fA-F0-9]{64}" required></div><button class="btn btn-primary" type="submit" style="margin-top:10px">Submit deposit for tracking</button><p class="metric-foot">Submitting a hash is not proof of payment and does not itself credit a balance.</p></form></section><section class="panel" style="margin-top:14px"><div class="panel-title"><h2>Your deposit requests</h2></div><div id="depositRequestsList" class="notice-card">Sign in to load your deposit requests.</div></section>`;
+  return `${heading("Crypto deposits", "View receiving instructions and track deposit requests. Do not send funds while this page says deposits are paused.")}<section class="panel"><div class="panel-title"><h2>Ethereum deposits · ETH and USDT</h2><span class="status pending" id="depositAvailability">Checking status</span></div><div class="notice-card" id="depositNetworkNote">Loading backend deposit status…</div><div class="form-field" style="margin-top:12px"><label for="depositAsset">Asset</label><select id="depositAsset"><option value="ETH">ETH · native Ethereum</option><option value="USDT">USDT · Ethereum ERC-20</option></select></div><div class="notice-card"><strong>Receiving address</strong><br><code id="depositAddress">No active receiving address</code><button type="button" class="btn btn-secondary" id="copyDepositAddress" style="margin-left:10px" hidden>Copy</button></div><div class="notice-card" id="depositAssetDetails">No verified deposit instructions are active. Never send assets to the address shown in another app unless CryptoWise presents it here as active.</div><form id="depositRequestForm" hidden><div class="form-field"><label for="depositTxHash">Transaction hash</label><input id="depositTxHash" name="txHash" type="text" inputmode="text" autocomplete="off" placeholder="0x…" pattern="0x[a-fA-F0-9]{64}" required></div><button class="btn btn-primary" type="submit" style="margin-top:10px">Submit deposit for tracking</button><p class="metric-foot">Submitting a hash is not proof of payment and does not itself credit a balance.</p></form></section><section class="panel" style="margin-top:14px"><div class="panel-title"><h2>Your deposit requests</h2><button type="button" class="btn btn-secondary" id="refreshDepositHistory">Refresh</button></div><p class="metric-foot" id="depositHistoryRefreshStatus" aria-live="polite">Statuses refresh automatically every 15 seconds while this page is open.</p><div id="depositRequestsList" class="notice-card">Sign in to load your deposit requests.</div></section>`;
 }
 
 function historyPage() {
@@ -268,6 +268,8 @@ let currentPage = "overview";
 let liveWallet = null;
 let liveProfile = null;
 let liveDepositInstructions = null;
+let depositHistoryPollTimer = null;
+let depositHistoryPollInFlight = false;
 // Display safeguard only; all fund controls must remain enforced by the backend.
 const customerDepositUiReleased = false;
 
@@ -279,6 +281,7 @@ function buildMarketTable() {
 
 function navigate(page) {
   if (!views[page]) return;
+  stopDepositHistoryPolling();
   currentPage = page;
   document
     .querySelectorAll(".side-link")
@@ -293,7 +296,10 @@ function navigate(page) {
   document.querySelector(".mobile-shade").classList.remove("visible");
   window.scrollTo({ top: 0, behavior: "smooth" });
   if (liveProfile) renderConnectedAccount();
-  if (currentPage === "deposit") loadDepositPage();
+  if (currentPage === "deposit") {
+    loadDepositPage();
+    startDepositHistoryPolling();
+  }
   if (currentPage === "settings") loadUserPreferences();
 }
 
@@ -784,7 +790,10 @@ async function connectCustomerApi() {
         if (badge) badge.textContent = "Profile connected · wallet unavailable";
         console.warn("CryptoWise wallet request failed:", walletError.message);
       }
-      if (currentPage === "deposit") loadDepositPage();
+      if (currentPage === "deposit") {
+    loadDepositPage();
+    startDepositHistoryPolling();
+  }
       if (currentPage === "settings") loadUserPreferences();
     } catch (error) {
       if (badge) badge.textContent = "API error · preview";
@@ -875,7 +884,7 @@ function renderDepositRequests(requests) {
 
   const thead = document.createElement("thead"),
     head = document.createElement("tr");
-  ["ASSET", "TRANSACTION HASH", "STATUS", "UPDATED"].forEach((label) => {
+  ["ASSET", "TRANSACTION HASH", "STATUS", "CONFIRMATIONS", "UPDATED"].forEach((label) => {
     const th = document.createElement("th");
     th.textContent = label;
     head.append(th);
@@ -886,18 +895,40 @@ function renderDepositRequests(requests) {
   const body = document.createElement("tbody");
   requests.forEach((request) => {
     const row = document.createElement("tr");
+    const status = String(request.status || "pending_manual_review");
+    const normalized = status.toLowerCase();
+    const completed = ["completed", "credited"].includes(normalized);
+    const statusLabel = completed
+      ? "Completed"
+      : normalized === "confirmed"
+        ? "Confirmed on-chain"
+        : normalized === "detected"
+        ? "Detected"
+        : normalized === "confirming"
+          ? "Confirming"
+          : normalized.startsWith("pending")
+            ? "Pending"
+            : status.replaceAll("_", " ");
     const values = [
       request.asset || "—",
       request.txHash || "—",
-      request.status || "—",
-      depositDate(request.updatedAt),
+      statusLabel,
+      Number.isInteger(request.confirmations) ? String(request.confirmations) : "—",
+      depositDate(request.updatedAt || request.createdAt),
     ];
     values.forEach((value, index) => {
       const cell = document.createElement("td");
-      cell.textContent =
-        index === 1 && String(value).length > 18
-          ? `${String(value).slice(0, 10)}…${String(value).slice(-8)}`
-          : String(value);
+      if (index === 2) {
+        const badge = document.createElement("span");
+        badge.className = `status ${completed ? "" : "pending"}`;
+        badge.textContent = String(value);
+        cell.append(badge);
+      } else {
+        cell.textContent =
+          index === 1 && String(value).length > 18
+            ? `${String(value).slice(0, 10)}…${String(value).slice(-8)}`
+            : String(value);
+      }
       row.append(cell);
     });
     body.append(row);
@@ -906,6 +937,44 @@ function renderDepositRequests(requests) {
   table.append(body);
   wrap.append(table);
   host.append(wrap);
+}
+
+async function refreshDepositHistory() {
+  if (currentPage !== "deposit" || !liveProfile || !window.CryptoWiseAPI || depositHistoryPollInFlight) return;
+  const list = document.getElementById("depositRequestsList");
+  const refreshStatus = document.getElementById("depositHistoryRefreshStatus");
+  if (!list || !refreshStatus) return;
+  depositHistoryPollInFlight = true;
+  const button = document.getElementById("refreshDepositHistory");
+  if (button) button.disabled = true;
+  try {
+    const history = await window.CryptoWiseAPI.depositRequests();
+    if (currentPage !== "deposit") return;
+    renderDepositRequests(history.requests || []);
+    refreshStatus.textContent = `Status checked at ${new Date().toLocaleTimeString()}. Updates automatically every 15 seconds.`;
+  } catch (error) {
+    refreshStatus.textContent = `Could not refresh deposit statuses: ${error.message}`;
+  } finally {
+    depositHistoryPollInFlight = false;
+    const activeButton = document.getElementById("refreshDepositHistory");
+    if (activeButton) activeButton.disabled = false;
+  }
+}
+
+function startDepositHistoryPolling() {
+  stopDepositHistoryPolling();
+  depositHistoryPollTimer = window.setInterval(() => {
+    if (!document.hidden) refreshDepositHistory();
+  }, 15000);
+  const button = document.getElementById("refreshDepositHistory");
+  button?.addEventListener("click", () => refreshDepositHistory());
+}
+
+function stopDepositHistoryPolling() {
+  if (depositHistoryPollTimer !== null) {
+    window.clearInterval(depositHistoryPollTimer);
+    depositHistoryPollTimer = null;
+  }
 }
 
 async function loadDepositPage() {
@@ -925,6 +994,8 @@ async function loadDepositPage() {
     liveDepositInstructions = instructions;
     updateDepositAssetDisplay();
     renderDepositRequests(history.requests || []);
+    const refreshStatus = document.getElementById("depositHistoryRefreshStatus");
+    if (refreshStatus) refreshStatus.textContent = `Status checked at ${new Date().toLocaleTimeString()}. Updates automatically every 15 seconds.`;
   } catch (error) {
     liveDepositInstructions = null;
     updateDepositAssetDisplay();
