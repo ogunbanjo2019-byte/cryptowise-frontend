@@ -192,7 +192,7 @@ function walletPage() {
 }
 
 function depositPage() {
-  return `${heading("Crypto deposits", "View receiving instructions and track deposit requests. Do not send funds while this page says deposits are paused.")}<section class="panel"><div class="panel-title"><h2>Ethereum deposits · ETH and USDT</h2><span class="status pending" id="depositAvailability">Checking status</span></div><div class="notice-card" id="depositNetworkNote">Loading backend deposit status…</div><div class="form-field" style="margin-top:12px"><label for="depositAsset">Asset</label><select id="depositAsset"><option value="ETH">ETH · native Ethereum</option><option value="USDT">USDT · Ethereum ERC-20</option></select></div><div class="notice-card"><strong>Receiving address</strong><br><code id="depositAddress">No active receiving address</code><button type="button" class="btn btn-secondary" id="copyDepositAddress" style="margin-left:10px" hidden>Copy</button></div><div class="notice-card" id="depositAssetDetails">No verified deposit instructions are active. Never send assets to the address shown in another app unless CryptoWise presents it here as active.</div><form id="depositRequestForm" hidden><div class="form-field"><label for="depositTxHash">Transaction hash</label><input id="depositTxHash" name="txHash" type="text" inputmode="text" autocomplete="off" placeholder="0x…" pattern="0x[a-fA-F0-9]{64}" required></div><button class="btn btn-primary" type="submit" style="margin-top:10px">Submit deposit for tracking</button><p class="metric-foot">Submitting a hash is not proof of payment and does not itself credit a balance.</p></form></section><section class="panel" style="margin-top:14px"><div class="panel-title"><h2>Your deposit requests</h2><button type="button" class="btn btn-secondary" id="refreshDepositHistory">Refresh</button></div><p class="metric-foot" id="depositHistoryRefreshStatus" aria-live="polite">Statuses refresh automatically every 15 seconds while this page is open.</p><div id="depositRequestsList" class="notice-card">Sign in to load your deposit requests.</div></section>`;
+  return `${heading("Crypto deposits", "View receiving instructions and track deposit requests. Do not send funds while this page says deposits are paused.")}<section class="panel"><div class="panel-title"><h2>Ethereum deposits · ETH and USDT</h2><span class="status pending" id="depositAvailability">Checking status</span></div><div class="notice-card" id="depositNetworkNote">Loading backend deposit status…</div><div class="form-field" style="margin-top:12px"><label for="depositAsset">Asset</label><select id="depositAsset"><option value="ETH">ETH · native Ethereum</option><option value="USDT">USDT · Ethereum ERC-20</option></select></div><div class="deposit-qr-panel" id="depositQrPanel" hidden><div><strong>Scan to copy the receiving address</strong><p id="depositQrCaption">Only scan and send when deposits are marked available.</p><img id="depositQrImage" width="190" height="190" alt="Crypto deposit address QR code"></div></div><div class="notice-card"><strong>Receiving address</strong><br><code id="depositAddress">No active receiving address</code><button type="button" class="btn btn-secondary" id="copyDepositAddress" style="margin-left:10px" hidden>Copy</button></div><div class="notice-card" id="depositAssetDetails">No verified deposit instructions are active. Never send assets to the address shown in another app unless CryptoWise presents it here as active.</div><form id="depositRequestForm" hidden><div class="form-field"><label for="depositTxHash">Transaction hash</label><input id="depositTxHash" name="txHash" type="text" inputmode="text" autocomplete="off" placeholder="0x…" pattern="0x[a-fA-F0-9]{64}" required></div><button class="btn btn-primary" type="submit" style="margin-top:10px">Submit deposit for tracking</button><p class="metric-foot">Submitting a hash is not proof of payment and does not itself credit a balance.</p></form></section><section class="panel" style="margin-top:14px"><div class="panel-title"><h2>Your deposit requests</h2><button type="button" class="btn btn-secondary" id="refreshDepositHistory">Refresh</button></div><p class="metric-foot" id="depositHistoryRefreshStatus" aria-live="polite">Statuses refresh automatically every 15 seconds while this page is open.</p><div id="depositRequestsList" class="notice-card">Sign in to load your deposit requests.</div></section>`;
 }
 
 function historyPage() {
@@ -844,6 +844,9 @@ function updateDepositAssetDisplay() {
   const copy = document.getElementById("copyDepositAddress");
   const badge = document.getElementById("depositAvailability");
   const select = document.getElementById("depositAsset");
+  const qrPanel = document.getElementById("depositQrPanel");
+  const qrImage = document.getElementById("depositQrImage");
+  const qrCaption = document.getElementById("depositQrCaption");
 
   if (!note || !address || !details || !form || !select) return;
 
@@ -861,6 +864,22 @@ function updateDepositAssetDisplay() {
     : "No verified deposit instructions are active. Do not send assets.";
   form.hidden = !enabled;
   if (copy) copy.hidden = !enabled;
+  if (qrPanel && qrImage) {
+    if (enabled && typeof window.qrcode === "function") {
+      const qr = window.qrcode(0, "M");
+      qr.addData(asset.address);
+      qr.make();
+      qrImage.src = qr.createDataURL(5, 4);
+      qrImage.alt = `QR code containing the ${asset.asset} receiving address`;
+      if (qrCaption) {
+        qrCaption.textContent = `For ${asset.asset} on ${liveDepositInstructions.network}. The QR encodes only the address—not an amount. Confirm the asset and network in your wallet before sending. Sending funds will not itself credit your CryptoWise balance.`;
+      }
+      qrPanel.hidden = false;
+    } else {
+      qrPanel.hidden = true;
+      qrImage.removeAttribute("src");
+    }
+  }
   if (badge) {
     badge.textContent = enabled ? "Available" : "Paused";
     badge.className = `status ${enabled ? "" : "pending"}`;
@@ -1070,3 +1089,4 @@ document.addEventListener("click", async (event) => {
     toast("Could not copy the address.");
   }
 });
+  
