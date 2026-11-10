@@ -184,11 +184,15 @@ function walletPage() {
     .filter((a) => ["USDT", "ETH"].includes(a.symbol))
     .map(
       (a) =>
-        `<section class="panel"><div class="wallet-asset"><i class="coin ${a.color}">${a.icon}</i><div><b>${a.name}</b><small>${a.symbol} · Ethereum network</small></div></div><div class="wallet-balance">${a.qty.toLocaleString()} ${a.symbol}</div><div class="wallet-equivalent">≈ ${money(a.qty * a.price)} USD</div><div class="wallet-actions"><button class="btn btn-primary" data-page-link="deposit">Deposit status</button><button class="btn btn-secondary" data-action="notify">Withdraw</button><button class="btn btn-secondary" data-action="notify">Transfer</button></div></section>`,
+        `<section class="panel"><div class="wallet-asset"><i class="coin ${a.color}">${a.icon}</i><div><b>${a.name}</b><small>${a.symbol} · Ethereum network</small></div></div><div class="wallet-balance">${a.qty.toLocaleString()} ${a.symbol}</div><div class="wallet-equivalent">≈ ${money(a.qty * a.price)} USD</div><div class="wallet-actions"><button class="btn btn-primary" data-page-link="deposit">Deposit status</button><button class="btn btn-secondary" data-page-link="withdrawal">Withdraw</button><button class="btn btn-secondary" data-action="notify">Transfer</button></div></section>`,
     )
     .join(
       "",
-    )}</div><section class="panel" style="margin-top:14px"><div class="panel-title"><h2>Deposit availability</h2></div><div class="notice-card"><strong>ETH and USDT on Ethereum are not currently accepting deposits.</strong><br>Do not send funds to the address shown in an exchange app or any address not displayed as an active CryptoWise instruction. Chain verification, confirmations, reorg recovery, and reconciliation must be operational before deposits open.</div><div class="panel-title" style="margin-top:19px"><h2>Recent wallet activity</h2><button data-page-link="history">Full history ↗</button></div><div class="table-wrap"><table class="activity-table"><thead><tr><th>ACTIVITY</th><th>AMOUNT</th><th>ASSET</th><th>STATUS</th><th>DATE</th></tr></thead><tbody>${activityRows(transactions.slice(0, 3))}</tbody></table></div></section>`;
+    )}</div><section class="panel" style="margin-top:14px"><div class="panel-title"><h2>Deposit availability</h2></div><div class="notice-card"><strong>Mainnet deposits and live withdrawals remain paused.</strong><br>A Sepolia test address may appear only in an explicitly enabled development environment. Never send mainnet funds to a testnet address or send assets to any address not displayed as an active CryptoWise instruction.</div><div class="panel-title" style="margin-top:19px"><h2>Recent wallet activity</h2><button data-page-link="history">Full history ↗</button></div><div class="table-wrap"><table class="activity-table"><thead><tr><th>ACTIVITY</th><th>AMOUNT</th><th>ASSET</th><th>STATUS</th><th>DATE</th></tr></thead><tbody>${activityRows(transactions.slice(0, 3))}</tbody></table></div></section>`;
+}
+
+function withdrawalPage() {
+  return `${heading("Withdraw crypto", "Request a withdrawal to an external wallet. You choose when to request it; market price changes never trigger a withdrawal automatically.")}<section class="panel"><div class="notice-card" id="withdrawalNetworkNote">Loading balance and network details…</div><form id="withdrawalRequestForm"><div class="form-grid"><div class="form-field"><label for="withdrawalAsset">Asset</label><select id="withdrawalAsset" required><option value="ETH">ETH</option><option value="USDT">USDT</option></select></div><div class="form-field"><label for="withdrawalAmount">Amount</label><input id="withdrawalAmount" type="text" inputmode="decimal" autocomplete="off" placeholder="0.01" required></div></div><div class="form-field" style="margin-top:12px"><label for="withdrawalDestination">Your external wallet address</label><input id="withdrawalDestination" type="text" inputmode="text" autocomplete="off" placeholder="0x…" pattern="0x[a-fA-F0-9]{40}" required></div><button class="btn btn-primary" type="submit" style="margin-top:12px">Request withdrawal</button><p class="metric-foot" id="withdrawalRequestMessage" role="status">Requests require review. No blockchain transaction is sent by this form.</p></form></section>`;
 }
 
 function depositPage() {
@@ -259,6 +263,7 @@ const views = {
   trade: tradePage,
   wallet: walletPage,
   deposit: depositPage,
+  withdrawal: withdrawalPage,
   history: historyPage,
   promotions: promotionsPage,
   settings: settingsPage,
@@ -270,8 +275,8 @@ let liveProfile = null;
 let liveDepositInstructions = null;
 let depositHistoryPollTimer = null;
 let depositHistoryPollInFlight = false;
-// Display safeguard only; all fund controls must remain enforced by the backend.
-const customerDepositUiReleased = false;
+// The backend's enabled flag is authoritative; live-fund readiness remains enforced server-side.
+const customerDepositUiReleased = true;
 
 function buildMarketTable() {
   const host = document.getElementById("marketTable");
@@ -300,6 +305,7 @@ function navigate(page) {
     loadDepositPage();
     startDepositHistoryPolling();
   }
+  if (currentPage === "withdrawal") loadWithdrawalPage();
   if (currentPage === "settings") loadUserPreferences();
 }
 
@@ -872,7 +878,12 @@ function updateDepositAssetDisplay() {
       qrImage.src = qr.createDataURL(5, 4);
       qrImage.alt = `QR code containing the ${asset.asset} receiving address`;
       if (qrCaption) {
-        qrCaption.textContent = `For ${asset.asset} on ${liveDepositInstructions.network}. The QR encodes only the address—not an amount. Confirm the asset and network in your wallet before sending. Sending funds will not itself credit your CryptoWise balance.`;
+        const testCreditNote = liveDepositInstructions.testnet
+          ? liveDepositInstructions.testCreditEnabled
+            ? " Confirmed Sepolia deposits may credit only the test ledger; these tokens have no real value."
+            : " Sepolia status can be tracked, but test-ledger auto-credit is off."
+          : "";
+        qrCaption.textContent = `For ${asset.asset} on ${liveDepositInstructions.network}. The QR encodes only the address—not an amount. Confirm the asset and network in your wallet. Your balance will not update until the backend verifies the transaction and required confirmations.${testCreditNote}${liveDepositInstructions.testnet ? " Never send mainnet funds." : ""}`;
       }
       qrPanel.hidden = false;
     } else {
@@ -1024,6 +1035,67 @@ async function loadDepositPage() {
   }
 }
 
+function decimalToAtomic(value, decimals) {
+  const text = String(value || '').trim();
+  if (!/^\d+(?:\.\d+)?$/.test(text)) throw new Error('Enter a positive decimal amount without separators.');
+  const [whole, fraction = ''] = text.split('.');
+  if (fraction.length > decimals) throw new Error(`This asset supports at most ${decimals} decimal places.`);
+  const atomic = (BigInt(whole) * (10n ** BigInt(decimals)) + BigInt((fraction + '0'.repeat(decimals)).slice(0, decimals) || '0')).toString();
+  if (BigInt(atomic) <= 0n || atomic.length > 78) throw new Error('Enter a valid amount greater than zero.');
+  return atomic;
+}
+
+async function loadWithdrawalPage() {
+  const note = document.getElementById('withdrawalNetworkNote');
+  if (!note || !window.CryptoWiseAPI) return;
+  if (!liveProfile) {
+    note.textContent = 'Sign in to load your available balance.';
+    return;
+  }
+  try {
+    const [instructions, wallet] = await Promise.all([
+      window.CryptoWiseAPI.depositInstructions(),
+      window.CryptoWiseAPI.wallet(),
+    ]);
+    liveDepositInstructions = instructions;
+    liveWallet = wallet;
+    const testnet = instructions.chainId === 11155111 && instructions.network === 'ethereum-testnet';
+    note.textContent = testnet
+      ? `Sepolia testnet only. Available ledger balance: ${atomicDisplay(wallet.availableAtomic?.ETH, 18)} ETH and ${atomicDisplay(wallet.availableAtomic?.USDT, 6)} USDT. Requests reserve the selected balance and enter review; this app does not sign or broadcast transactions.`
+      : 'External withdrawals are paused until a reviewed custody and signing service is configured.';
+  } catch (error) {
+    note.textContent = `Could not load withdrawal details: ${error.message}`;
+  }
+}
+
+document.addEventListener('submit', async (event) => {
+  if (!event.target.matches('#withdrawalRequestForm')) return;
+  event.preventDefault();
+  const form = event.target;
+  const button = form.querySelector('button[type=submit]');
+  const message = document.getElementById('withdrawalRequestMessage');
+  try {
+    const asset = document.getElementById('withdrawalAsset').value;
+    const amount = document.getElementById('withdrawalAmount').value;
+    const destination = document.getElementById('withdrawalDestination').value.trim();
+    const amountAtomic = decimalToAtomic(amount, asset === 'ETH' ? 18 : 6);
+    const network = liveDepositInstructions?.network;
+    if (!network) throw new Error('Network settings are not loaded; refresh this page and try again.');
+    if (!window.confirm(`Queue ${amount} ${asset} for withdrawal to ${destination}? This request is not broadcast yet.`)) return;
+    button.disabled = true;
+    message.textContent = 'Submitting withdrawal request…';
+    const result = await window.CryptoWiseAPI.createWithdrawalRequest({ asset, amountAtomic, destination, network });
+    message.textContent = result.message || 'Withdrawal request queued for review. No blockchain transaction was sent.';
+    form.reset();
+    liveWallet = await window.CryptoWiseAPI.wallet();
+    renderConnectedAccount();
+  } catch (error) {
+    message.textContent = error.message || 'Withdrawal request could not be submitted.';
+  } finally {
+    button.disabled = false;
+  }
+});
+
 document.addEventListener("submit", async (event) => {
   if (!event.target.matches("#demoTradeForm")) return;
   event.preventDefault();
@@ -1065,7 +1137,7 @@ document.addEventListener("submit", async (event) => {
     const result = await window.CryptoWiseAPI.createDepositRequest({
       asset: document.getElementById("depositAsset").value,
       txHash,
-      network: "ethereum",
+      network: liveDepositInstructions.network,
     });
     toast(result.message || "Deposit request submitted for tracking.");
     form.reset();
@@ -1089,4 +1161,3 @@ document.addEventListener("click", async (event) => {
     toast("Could not copy the address.");
   }
 });
-  
