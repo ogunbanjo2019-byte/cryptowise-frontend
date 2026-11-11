@@ -279,6 +279,8 @@ const views = {
 
 let currentPage = "overview";
 let liveWallet = null;
+let liveDepositRequests = [];
+let depositStatusFilter = "all";
 let liveProfile = null;
 let liveDepositInstructions = null;
 let depositHistoryPollTimer = null;
@@ -829,7 +831,8 @@ async function loadUserNotifications() {
     }
     items.forEach((item) => {
       const card = document.createElement("article");
-      card.className = `notification-item ${item.readAt ? "" : "unread"}`;
+      const lifecycle = item.status === "processing" ? "processing" : item.status === "completed" ? "completed" : "";
+      card.className = `notification-item ${item.readAt ? "" : "unread"} ${lifecycle}`;
       const title = document.createElement("strong");
       title.textContent = item.title || item.type || "CryptoWise notification";
       const message = document.createElement("p");
@@ -1017,10 +1020,34 @@ function updateDepositAssetDisplay() {
 function renderDepositRequests(requests) {
   const host = document.getElementById("depositRequestsList");
   if (!host) return;
+  liveDepositRequests = Array.isArray(requests) ? requests : [];
   host.replaceChildren();
 
-  if (!requests?.length) {
-    host.textContent = "No deposit requests yet.";
+  const toolbar = document.createElement("div");
+  toolbar.className = "filter-row deposit-status-filter";
+  const label = document.createElement("label");
+  label.textContent = "Show";
+  const select = document.createElement("select");
+  select.id = "depositStatusFilter";
+  [["all", "All statuses"], ["pending", "Pending only"], ["completed", "Completed only"]].forEach(([value, text]) => {
+    const option = document.createElement("option");
+    option.value = value;
+    option.textContent = text;
+    option.selected = value === depositStatusFilter;
+    select.append(option);
+  });
+  label.append(select);
+  toolbar.append(label);
+  host.append(toolbar);
+  const filtered = liveDepositRequests.filter((request) => {
+    const normalized = String(request.status || "pending_manual_review").toLowerCase();
+    const completed = ["completed", "credited"].includes(normalized);
+    return depositStatusFilter === "all" || (depositStatusFilter === "completed" ? completed : !completed);
+  });
+  if (!filtered.length) {
+    const empty = document.createElement("p");
+    empty.textContent = depositStatusFilter === "completed" ? "No completed deposit requests." : depositStatusFilter === "pending" ? "No pending deposit requests." : "No deposit requests yet.";
+    host.append(empty);
     return;
   }
 
@@ -1040,7 +1067,7 @@ function renderDepositRequests(requests) {
   table.append(thead);
 
   const body = document.createElement("tbody");
-  requests.forEach((request) => {
+  filtered.forEach((request) => {
     const row = document.createElement("tr");
     const status = String(request.status || "pending_manual_review");
     const normalized = status.toLowerCase();
@@ -1225,18 +1252,23 @@ document.addEventListener("submit", async (event) => {
   if (mode === "live" && !window.confirm("This sends a real spot market order to the configured Bybit account. Continue?")) return;
   if (!window.CryptoWiseAPI?.trade) { if (message) message.textContent = "Trading API is not loaded."; return; }
   button.disabled = true;
-  if (message) message.textContent = mode === "live" ? "Submitting live Bybit order…" : "Submitting demo order…";
+  if (message) message.textContent = mode === "live" ? "Submitting live Bybit order…" : "Reading demo order…";
   try {
     const result = await window.CryptoWiseAPI.trade({ mode, side, baseAsset: "ETH", quoteAsset: "USDT", amountUsd }, crypto.randomUUID());
     if (message) message.textContent = mode === "live" ? `Bybit accepted ${result.trade.side} order ${result.trade.orderId || result.trade.orderLinkId || ""}. Confirm fills in Bybit.` : `Filled ${result.trade.side} demo order for ${result.trade.amountUsd} USDT at ${result.trade.price}.`;
     toast(mode === "live" ? "Live Bybit order submitted. Verify its status in Bybit." : "Demo order filled. Your virtual wallet was updated.");
     liveWallet = await window.CryptoWiseAPI.wallet();
     renderConnectedAccount();
+    await loadUserNotifications();
   } catch (error) { if (message) message.textContent = error.message || "Demo order failed."; }
   finally { button.disabled = false; }
 });
 document.addEventListener("change", (event) => {
   if (event.target.matches("#depositAsset")) updateDepositAssetDisplay();
+  if (event.target.matches("#depositStatusFilter")) {
+    depositStatusFilter = event.target.value;
+    renderDepositRequests(liveDepositRequests);
+  }
 });
 
 document.addEventListener("submit", async (event) => {

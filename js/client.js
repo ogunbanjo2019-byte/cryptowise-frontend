@@ -90,6 +90,8 @@
     adminDepositOperations: () => request("/v1/admin/deposit-operations"),
     adminWithdrawals: (status) =>
       request(`/v1/admin/withdrawals?status=${encodeURIComponent(status || "pending_review")}`),
+    adminSubmitWithdrawalToCustody: (id) =>
+      request(`/v1/admin/withdrawals/${encodeURIComponent(id)}/submit-to-custody`, { method: "POST", body: {} }),
     auditLogs: () => request("/v1/admin/audit-logs"),
     tradingStatus: () => request("/v1/trading/status"),
     trade: (body, idempotencyKey) => request("/v1/trade", { method: "POST", body, idempotencyKey }),
