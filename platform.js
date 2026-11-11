@@ -54,6 +54,14 @@ const transactions = [
   ["Buy BTC", "0.01 BTC", "BTC", "Completed", "Oct 25, 2026"],
 ];
 
+let favoriteAssets = new Set();
+try {
+  const storedFavorites = JSON.parse(localStorage.getItem("cw-market-favorites") || "[]");
+  if (Array.isArray(storedFavorites)) favoriteAssets = new Set(storedFavorites.filter((symbol) => assets.some((asset) => asset.symbol === symbol)));
+} catch {
+  favoriteAssets = new Set();
+}
+
 const el = (tag, cls, text) => {
   const e = document.createElement(tag);
   if (cls) e.className = cls;
@@ -173,7 +181,7 @@ function marketRows(list = assets) {
 }
 
 function marketsPage() {
-  return `${heading("Markets", "Explore crypto assets and illustrative prices.", `<button class="btn btn-secondary" data-action="download">↓ &nbsp; Export market</button>`)}<div class="metric-grid">${metric("ASSETS LISTED", "120+", "Illustrative catalog", "◈")}${metric("MARKET SENTIMENT", "Positive", "Market snapshot · sample", "↗")}${metric("CURRENCY", "USD", "Display preference", "＄")}</div><section class="panel"><div class="panel-title"><h2>Popular assets</h2><span class="chart-legend"><span></span> Sample market data</span></div><div class="filter-row"><input class="table-search" placeholder="Search assets..."><select><option>All assets</option><option>Favorites</option><option>Stablecoins</option></select></div><div id="marketTable"></div></section>`;
+  return `${heading("Markets", "Explore sample crypto assets and illustrative prices.", `<button class="btn btn-secondary" data-action="download">↓ &nbsp; Export account</button>`)}<div class="metric-grid">${metric("POPULAR ASSETS", String(assets.length), "Sample catalog · not an exchange listing", "◈")}${metric("MARKET SENTIMENT", "Preview", "No live market feed connected", "↗")}${metric("CURRENCY", "USD", "Illustrative sample prices", "＄")}</div><section class="panel"><div class="panel-title"><h2>Popular assets</h2><span class="chart-legend"><span></span> Sample market data</span></div><div class="filter-row"><input class="table-search" placeholder="Search sample assets..." aria-label="Search sample assets"><select aria-label="Filter sample assets"><option>All assets</option><option>Favorites</option><option>Stablecoins</option></select></div><div id="marketTable"></div></section>`;
 }
 
 function tradePage() {
@@ -275,13 +283,66 @@ let liveProfile = null;
 let liveDepositInstructions = null;
 let depositHistoryPollTimer = null;
 let depositHistoryPollInFlight = false;
-// The backend's enabled flag is authoritative; live-fund readiness remains enforced server-side.
-const customerDepositUiReleased = true;
 
 function buildMarketTable() {
   const host = document.getElementById("marketTable");
   if (!host) return;
-  // Note: ensure table helper is defined if used, or use row strings directly
+  const query = document.querySelector(".table-search")?.value.trim().toLowerCase() || "";
+  const filter = document.querySelector(".filter-row select")?.value || "All assets";
+  const list = assets.filter((asset) => {
+    const matchesQuery = `${asset.name} ${asset.symbol}`.toLowerCase().includes(query);
+    const matchesFilter = filter === "Favorites"
+      ? favoriteAssets.has(asset.symbol)
+      : filter === "Stablecoins"
+        ? asset.symbol === "USDT"
+        : true;
+    return matchesQuery && matchesFilter;
+  });
+  host.replaceChildren();
+  if (!list.length) {
+    const empty = el("div", "notice-card", "No matching sample assets. Try another search or filter.");
+    host.append(empty);
+    return;
+  }
+
+  const wrap = el("div", "table-wrap");
+  const table = el("table", "admin-table");
+  const head = el("thead");
+  const headerRow = el("tr");
+  ["ASSET", "SAMPLE PRICE", "24H CHANGE", "ACTION"].forEach((label) => headerRow.append(el("th", "", label)));
+  head.append(headerRow);
+  table.append(head);
+  const body = el("tbody");
+  list.forEach((asset) => {
+    const row = el("tr");
+    const name = el("td");
+    const coin = el("i", `coin ${asset.color}`, asset.icon);
+    const label = el("span", "market-asset-label");
+    label.append(el("b", "", asset.name), el("small", "", asset.symbol));
+    name.append(coin, label);
+    const price = el("td", "", money(asset.price));
+    const change = el("td", asset.change.startsWith("-") ? "asset-change down" : "asset-change", asset.change);
+    const action = el("td");
+    const favorite = el("button", "table-action", favoriteAssets.has(asset.symbol) ? "★ Saved" : "☆ Save");
+    favorite.type = "button";
+    favorite.dataset.marketFavorite = asset.symbol;
+    favorite.setAttribute("aria-pressed", String(favoriteAssets.has(asset.symbol)));
+    action.append(favorite);
+    if (asset.symbol === "ETH") {
+      const trade = el("button", "table-action approve", "Demo trade");
+      trade.type = "button";
+      trade.dataset.marketTrade = asset.symbol;
+      action.append(trade);
+    } else {
+      const unavailable = el("span", "metric-foot", "Trade unavailable in preview");
+      action.append(unavailable);
+    }
+    row.append(name, price, change, action);
+    body.append(row);
+  });
+  table.append(body);
+  wrap.append(table);
+  host.append(wrap);
 }
 
 function navigate(page) {
@@ -324,6 +385,34 @@ function toast(message) {
 }
 
 document.addEventListener("click", (e) => {
+  const accountTab = e.target.closest(".account-tabs button");
+  if (accountTab) {
+    const mode = accountTab.textContent.trim().toLowerCase();
+    document.querySelectorAll(".account-tabs button").forEach((button) => button.classList.toggle("active", button === accountTab));
+    document.querySelectorAll(".account-card").forEach((card) => {
+      card.hidden = mode === "demo" ? !card.classList.contains("demo-account") : card.classList.contains("demo-account");
+    });
+    return;
+  }
+  const accountAction = e.target.closest(".account-tabs span");
+  if (accountAction) {
+    toast("Additional accounts are not available in this preview.");
+    return;
+  }
+  const favorite = e.target.closest("[data-market-favorite]");
+  if (favorite) {
+    const symbol = favorite.dataset.marketFavorite;
+    if (favoriteAssets.has(symbol)) favoriteAssets.delete(symbol);
+    else favoriteAssets.add(symbol);
+    try { localStorage.setItem("cw-market-favorites", JSON.stringify([...favoriteAssets])); } catch {}
+    buildMarketTable();
+    return;
+  }
+  if (e.target.closest("[data-market-trade]")) {
+    navigate("trade");
+    toast("Demo trading is available for ETH/USDT only. No real order will be placed.");
+    return;
+  }
   const settingsTab = e.target.closest("[data-settings-tab]");
   if (settingsTab) {
     document
@@ -375,8 +464,23 @@ document.addEventListener("click", (e) => {
     if (side) side.value = tradeTab.dataset.tab;
     return;
   }
+  const timeframe = e.target.closest(".trade-timebar button");
+  if (timeframe && ["15m", "1H", "4H", "1D", "1W"].includes(timeframe.textContent.trim())) {
+    timeframe.parentElement.querySelectorAll("button").forEach((button) => button.classList.toggle("active", button === timeframe));
+    toast("Timeframe selection is visual only; this preview has no live chart feed.");
+    return;
+  }
+  const chartTool = e.target.closest(".symbol-button, .trade-topbar .icon-tool, .chart-tools button, .trade-timebar button");
+  if (chartTool) {
+    toast("Chart controls are preview-only until a trusted market-data service is connected.");
+    return;
+  }
   const action = e.target.closest("[data-action]");
   if (action) {
+    if (action.dataset.action === "open-profile") {
+      navigate("settings");
+      return;
+    }
     if (action.dataset.action === "open-notifications") {
       navigate("settings");
       setTimeout(
@@ -467,10 +571,23 @@ document
   .querySelector(".top-search input")
   ?.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
+      const query = e.currentTarget.value.trim();
       navigate("markets");
-      document.querySelector(".table-search")?.focus();
+      const filter = document.querySelector(".table-search");
+      if (filter) {
+        filter.value = query;
+        buildMarketTable();
+        filter.focus();
+      }
     }
   });
+
+document.addEventListener("input", (event) => {
+  if (event.target.matches(".table-search") && currentPage === "markets") buildMarketTable();
+});
+document.addEventListener("change", (event) => {
+  if (event.target.matches(".filter-row select") && currentPage === "markets") buildMarketTable();
+});
 
 document.addEventListener("keydown", (e) => {
   if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
@@ -859,7 +976,7 @@ function updateDepositAssetDisplay() {
   const asset = (liveDepositInstructions?.assets || []).find(
     (x) => x.asset === select.value,
   );
-  const enabled = customerDepositUiReleased && liveDepositInstructions?.enabled === true && !!asset?.address;
+  const enabled = liveDepositInstructions?.testnet === true && liveDepositInstructions?.enabled === true && !!asset?.address;
 
   note.textContent = enabled
     ? (liveDepositInstructions?.notice || "Deposits are available.")
@@ -1127,8 +1244,8 @@ document.addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = event.target,
     button = form.querySelector("button[type=submit]");
-  if (!customerDepositUiReleased || !liveDepositInstructions?.enabled) {
-    toast("Deposits are paused; no request was submitted.");
+  if (liveDepositInstructions?.testnet !== true || !liveDepositInstructions?.enabled) {
+    toast("Mainnet deposits are paused. Only explicitly enabled Sepolia test deposits can be submitted.");
     return;
   }
   button.disabled = true;

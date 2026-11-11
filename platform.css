@@ -9,3 +9,11 @@
 .mode-tabs{display:flex;gap:4px;margin:-2px 0 13px;border-bottom:1px solid var(--line)}.mode-tabs button{border:0;background:transparent;color:#859b9d;padding:7px 11px;font-size:8px;cursor:pointer}.mode-tabs button.active{color:#74e7b9;border-bottom:2px solid #20ce98}.mode-tabs button[data-trade-mode="bybit"]{color:#e5bb63}.mode-tabs button[data-trade-mode="bybit"].active{color:#f0c875;border-color:#e5ae4a}
 
 .deposit-qr-panel{margin:12px 0;padding:18px;border:1px solid var(--line);border-radius:6px;background:#091b23;text-align:center}.deposit-qr-panel[hidden]{display:none!important}.deposit-qr-panel strong{font-size:11px;color:#d5e6df}.deposit-qr-panel p{max-width:420px;margin:7px auto 13px;color:#91a9a8;font-size:9px;line-height:1.6}.deposit-qr-panel img{display:block;width:190px;height:190px;max-width:100%;margin:0 auto;padding:8px;border-radius:5px;background:#fff;image-rendering:pixelated}
+
+/* Searchable market table enhancements */
+#marketTable .market-asset-label{display:inline-block;vertical-align:middle;margin-left:8px}
+#marketTable .market-asset-label b,#marketTable .market-asset-label small{display:block;line-height:1.5}
+#marketTable .market-asset-label small{color:#7e9798;font-size:8px}
+#marketTable .table-action{margin:2px 5px 2px 0}
+#marketTable .metric-foot{white-space:normal}
+  
